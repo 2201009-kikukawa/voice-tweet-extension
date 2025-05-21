@@ -1,6 +1,6 @@
 {
-  "name": "sample-extension-04251226",
-  "displayName": "sample displayName",
+  "name": "voice-tweet",
+  "displayName": "Vice Tweet",
   "description": "sample description",
   "version": "0.0.1",
   "publisher": "VS-Modules",
@@ -17,19 +17,20 @@
   ],
   "contributes": {
     "views": {
-      "sample-id": [
+      "voice-tweet": [
         {
           "type": "webview",
-          "id": "sample-id",
-          "name": "sample-name"
+          "id": "voice-tweet",
+          "name": "Voice Tweet",
+          "icon": "./resources/webview_icon.svg"
         }
       ]
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "sample-id",
-          "title": "sample-title",
+          "id": "voice-tweet",
+          "title": "Voice Tweet",
           "icon": "./resources/webview_icon.svg"
         }
       ]
