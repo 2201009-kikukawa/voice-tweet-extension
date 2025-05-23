@@ -1,0 +1,20 @@
+:root {
+  --input-min-width: unset !important;
+}
+
+.selector-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  max-width: 15rem;
+}
+
+.selector-wrap > label:not(:first-child) {
+  margin-top: .8rem;
+}
+
+#submit {
+  max-width: 15rem;
+  width: 100%;
+  margin-top: 1rem;
+}
