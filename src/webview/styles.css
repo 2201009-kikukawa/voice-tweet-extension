@@ -18,3 +18,48 @@
   width: 100%;
   margin-top: 1rem;
 }
+
+.vscode-light {
+  padding: 0;
+}
+
+.speechBubble {
+  position: relative;
+  display: inline-block;
+  margin: 20px;
+  padding: 16px;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  background-color: #ffffff;
+  text-align: left;
+  font-size: .8rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #000000;
+}
+
+.speechBubble::before {
+  content: "";
+  position: absolute;
+  top: 35%;
+  left: 0;
+  border-style: solid;
+  border-width: 0 20px 20px 0;
+  border-color: transparent #000000 transparent transparent;
+  translate: -100% -50%;
+  transform: skew(0, -25deg);
+  transform-origin: right;
+}
+
+.speechBubble::after {
+  content: "";
+  position: absolute;
+  top: 35%;
+  left: 0;
+  border-style: solid;
+  border-width: 0 17.6px 17.6px 0;
+  border-color: transparent #ffffff transparent transparent;
+  translate: -100% calc(-50% - 0.2px);
+  transform: skew(0, -25deg);
+  transform-origin: right;
+}

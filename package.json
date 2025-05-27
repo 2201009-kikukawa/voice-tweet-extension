@@ -24,6 +24,14 @@
           "name": "Voice Tweet",
           "icon": "./resources/webview_icon.svg"
         }
+      ],
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "voice-tweet-explorer",
+          "name": "つぶやきエディタ",
+          "icon": "./resources/webview_icon.svg"
+        }
       ]
     },
     "viewsContainers": {
