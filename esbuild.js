@@ -43,6 +43,14 @@ const webviewConfig = {
   ],
 };
 
+const sidebarWebviewConfig = {
+  ...baseConfig,
+  target: "es2020",
+  format: "esm",
+  entryPoints: ["./src/webview/sidebar.tsx"],
+  outfile: "./out/sidebar.js",
+};
+
 // This watch config adheres to the conventions of the esbuild-problem-matchers
 // extension (https://github.com/connor4312/esbuild-problem-matchers#esbuild-via-js)
 /** @type BuildOptions */
@@ -83,6 +91,7 @@ const watchConfig = {
       // Build extension and webview code
       await build(extensionConfig);
       await build(webviewConfig);
+      await build(sidebarWebviewConfig);
       console.log("build complete");
     }
   } catch (err) {
