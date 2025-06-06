@@ -69,6 +69,8 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   }
