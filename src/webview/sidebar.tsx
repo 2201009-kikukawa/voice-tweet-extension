@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { VSCodeButton, VSCodeDropdown } from "@vscode/webview-ui-toolkit/react";
+import { EventListenerProps, EventTypes } from "../types/classNames";
 
-const sidebar = () => {
+// VSCode API使用
+declare const acquireVsCodeApi: () => {
+  postMessage: (message: EventListenerProps) => void;
+};
+const vscode = acquireVsCodeApi();
+
+const Sidebar = () => {
+  const [message, setMessage] = useState<string>("");
+
+  useEffect(() => {
+    vscode.postMessage({
+      type: EventTypes.init,
+      text: ""
+    });
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === EventTypes.messageContent) {
+        setMessage(event.data.text);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   return (
     <>
-      <div>
-        <p className="speechBubble">1000文字コーティングしたよ、すごい！</p>
-      </div>
+      {message && message.trim() !== "" &&
+        <div>
+          <p className="speechBubble">{message}</p>
+      </div>}
     </>
   );
 };
 
-export default sidebar;
+export default Sidebar;
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
-root.render(React.createElement(sidebar));
+root.render(React.createElement(Sidebar));
