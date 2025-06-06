@@ -49,6 +49,15 @@ const sidebarWebviewConfig = {
   format: "esm",
   entryPoints: ["./src/webview/sidebar.tsx"],
   outfile: "./out/sidebar.js",
+  plugins: [
+    copy({
+      resolveFrom: "cwd",
+      assets: {
+        from: ["./src/messages/messages.json"],
+        to: ["./out"],
+      },
+    }),
+  ],
 };
 
 // This watch config adheres to the conventions of the esbuild-problem-matchers
