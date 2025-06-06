@@ -1,20 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { VSCodeButton, VSCodeDropdown } from "@vscode/webview-ui-toolkit/react";
+import { EventListenerProps, EventTypes } from "../types/classNames";
 
-const main = () => {
+// VSCode API使用
+declare const acquireVsCodeApi: () => {
+  postMessage: (message: EventListenerProps) => void;
+};
+const vscode = acquireVsCodeApi();
+
+const Main = () => {
   const [model, setModel] = useState<string>("");
   const [mode, setMode] = useState<string>("");
   const [interval, setInterval] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  const handleSubmit = () => {
-    // 仮
-    console.log(`Model: ${model}, Mode: ${mode}, Interval: ${interval}`);
+  useEffect(() => {
+    vscode.postMessage({
+      type: EventTypes.init,
+      text: ""
+    });
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === EventTypes.init) {
+        setIsRunning(event.data.isRunning);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []
+  );
+
+  const handleStart = () => {
+    switch (interval) {
+      case "1":
+        vscode.postMessage({
+          type: EventTypes.setInterval,
+          text: "3",
+        });
+        break;
+      case "2":
+        vscode.postMessage({
+          type: EventTypes.setInterval,
+          text: "300",
+        });
+        break;
+    }
+
+    setIsRunning(true);
+  };
+
+  const handleStop = () => {
+    vscode.postMessage({
+      type: EventTypes.stopTimer,
+      text: ""
+    });
+
+    setIsRunning(false);
   };
 
   return (
     <>
-      <div>
+      <div className="container">
         <h3>つぶやきエディタ</h3>
         <div className="selector-wrap">
           <label htmlFor="model">音声モデル</label>
@@ -50,18 +98,21 @@ const main = () => {
             }}
           >
             <option value="0" selected>選択してください</option>
-            <option value="1">10秒</option>  {/* デモ用 */}
+            <option value="1">3秒</option>  {/* デモ用 */}
             <option value="2">5分</option>
           </VSCodeDropdown>
         </div>
 
-        <VSCodeButton id="submit" appearance="primary" onClick={handleSubmit}>設定</VSCodeButton>
+        {isRunning ?
+          <VSCodeButton className="submit" appearance="primary" onClick={handleStop}>停止</VSCodeButton> :
+          <VSCodeButton className="submit" appearance="primary" onClick={handleStart}>開始</VSCodeButton>
+        }
       </div>
     </>
   );
 };
 
-export default main;
+export default Main;
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
-root.render(React.createElement(main));
+root.render(React.createElement(Main));
