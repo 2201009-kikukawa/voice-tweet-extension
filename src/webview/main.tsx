@@ -17,12 +17,12 @@ const Main = () => {
 
   useEffect(() => {
     vscode.postMessage({
-      type: EventTypes.init,
+      type: EventTypes.initTimer,
       text: ""
     });
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === EventTypes.init) {
+      if (event.data?.type === EventTypes.initTimer) {
         setIsRunning(event.data.isRunning);
       }
     };
@@ -36,13 +36,13 @@ const Main = () => {
     switch (interval) {
       case "1":
         vscode.postMessage({
-          type: EventTypes.setInterval,
+          type: EventTypes.startTimer,
           text: "3",
         });
         break;
       case "2":
         vscode.postMessage({
-          type: EventTypes.setInterval,
+          type: EventTypes.startTimer,
           text: "300",
         });
         break;

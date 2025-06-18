@@ -1,7 +1,7 @@
 export enum EventTypes {
-  setInterval = "setInterval",
-  init = "init",
-  messageContent = "MessageContent",
+  startTimer = "startTimer",
+  initTimer = "initTimer",
+  receiveMessage = "receiveMessage",
   stopTimer = "stopTimer",
 };
 

@@ -13,18 +13,18 @@ const Sidebar = () => {
 
   useEffect(() => {
     vscode.postMessage({
-      type: EventTypes.init,
+      type: EventTypes.initTimer,
       text: ""
     });
 
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === EventTypes.messageContent) {
+    const handleInitMessage = (event: MessageEvent) => {
+      if (event.data?.type === EventTypes.receiveMessage) {
         setMessage(event.data.text);
       }
     };
 
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    window.addEventListener("message", handleInitMessage);
+    return () => window.removeEventListener("message", handleInitMessage);
   }, []);
 
   return (

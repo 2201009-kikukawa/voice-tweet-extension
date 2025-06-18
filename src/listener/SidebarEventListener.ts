@@ -11,9 +11,9 @@ export class SidebarEventListener {
       const type = message.type;
 
       switch (type) {
-        case EventTypes.init:
+        case EventTypes.initTimer:
           webviewView.webview.postMessage({
-            type: EventTypes.messageContent,
+            type: EventTypes.receiveMessage,
             text: lastMessage
           });
         default:

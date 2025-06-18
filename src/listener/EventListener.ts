@@ -1,8 +1,7 @@
 import { WebviewView } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
-import * as fs from "fs";
-import * as path from "path";
 import { sidebarWebviewView } from "./SidebarEventListener";
+import { MESSAGE_LIST } from "../const";
 
 let timer: NodeJS.Timeout | undefined; // タイマー管理
 let isRunning = false; // タイマーが動作中かどうか
@@ -16,14 +15,14 @@ export class EventListener {
 
       switch (type) {
         // タイマー開始
-        case EventTypes.setInterval:
+        case EventTypes.startTimer:
           startInterval(parseInt(text, 10));
           break;
 
         // 初期化（タイマー動作状態チェック）
-        case EventTypes.init:
+        case EventTypes.initTimer:
           webviewView.webview.postMessage({
-            type: EventTypes.init,
+            type: EventTypes.initTimer,
             isRunning: isRunning
           });
           break;
@@ -58,13 +57,12 @@ export class EventListener {
 
       // メッセージ送信
       function sendRandomMessage() {
-        const msg = getRandomMessage();
-        lastMessage = msg;
+        lastMessage = getRandomMessage();
 
         if (sidebarWebviewView) {
           sidebarWebviewView.webview.postMessage({
-            type: EventTypes.messageContent,
-            text: msg
+            type: EventTypes.receiveMessage,
+            text: lastMessage
           });
         }
       }
