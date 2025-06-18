@@ -29,7 +29,7 @@ const webviewConfig = {
   ...baseConfig,
   target: "es2020",
   format: "esm",
-  entryPoints: ["./src/webview/main.tsx"],
+  entryPoints: ["./src/webview/sidebar.tsx"],
   outfile: "./out/webview.js",
   plugins: [
     // Copy webview css files to `out` directory unaltered
@@ -47,8 +47,8 @@ const sidebarWebviewConfig = {
   ...baseConfig,
   target: "es2020",
   format: "esm",
-  entryPoints: ["./src/webview/sidebar.tsx"],
-  outfile: "./out/sidebar.js",
+  entryPoints: ["./src/webview/panel.tsx"],
+  outfile: "./out/panel.js",
 };
 
 // This watch config adheres to the conventions of the esbuild-problem-matchers

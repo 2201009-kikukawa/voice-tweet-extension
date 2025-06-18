@@ -2,6 +2,10 @@
   --input-min-width: unset !important;
 }
 
+.container {
+  padding: 0 1rem;
+}
+
 .selector-wrap {
   display: flex;
   flex-direction: column;
@@ -13,7 +17,7 @@
   margin-top: .8rem;
 }
 
-#submit {
+.submit {
   max-width: 15rem;
   width: 100%;
   margin-top: 1rem;
