@@ -8,12 +8,12 @@ import {
 } from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
-import { EventListener } from "../listener/EventListener";
+import { SidebarEventListener } from "../listener/PanelEventListener";
 
-export class ViewProvider implements WebviewViewProvider {
-  public static readonly viewType = "voice-tweet";
+export class SidebarProvider implements WebviewViewProvider {
+  public static readonly viewType = "voice-tweet-explorer";
 
-  constructor(private readonly _extensionUri: Uri) {}
+  constructor(private readonly _extensionUri: Uri) { }
 
   public resolveWebviewView(
     webviewView: WebviewView,
@@ -27,12 +27,12 @@ export class ViewProvider implements WebviewViewProvider {
 
     webviewView.webview.html = this._getWebviewContent(webviewView.webview, this._extensionUri);
 
-    const listener = new EventListener();
+    const listener = new SidebarEventListener();
     listener.setWebviewMessageListener(webviewView);
   }
 
   private _getWebviewContent(webview: Webview, extensionUri: Uri) {
-    const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
+    const webviewUri = getUri(webview, extensionUri, ["out", "panel.js"]);
     const stylesUri = getUri(webview, extensionUri, ["out", "styles.css"]);
     const nonce = getNonce();
 
