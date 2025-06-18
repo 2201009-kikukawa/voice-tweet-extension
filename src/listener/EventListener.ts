@@ -72,12 +72,8 @@ export class EventListener {
       // メッセージをランダムに取得
       function getRandomMessage(): string {
         try {
-          const messagesPath = path.join(__dirname, "..", "out", "messages.json");
-          const data = fs.readFileSync(messagesPath, "utf8");
-          const messages = JSON.parse(data);
-          const values = Object.values(messages);
-          const randomIndex = Math.floor(Math.random() * values.length);
-          return values[randomIndex] as string;
+          const randomIndex = Math.floor(Math.random() * MESSAGE_LIST.length);
+          return MESSAGE_LIST[randomIndex];
         } catch (error) {
           console.error("Error reading messages file:", error);
           return "メッセージの取得に失敗しました";
