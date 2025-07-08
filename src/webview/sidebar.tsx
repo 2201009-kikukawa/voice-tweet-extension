@@ -18,7 +18,8 @@ const Main = () => {
   useEffect(() => {
     vscode.postMessage({
       type: EventTypes.initTimer,
-      text: ""
+      text: "",
+      speakerId: 0
     });
 
     const handleMessage = (event: MessageEvent) => {
@@ -34,16 +35,19 @@ const Main = () => {
 
   const handleStart = () => {
     switch (interval) {
-      case "3":
+      case "10":
         vscode.postMessage({
           type: EventTypes.startTimer,
-          text: "3",
+          text: "10",
+          speakerId: parseInt(model, 10)
         });
         break;
+
       case "300":
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "300",
+          speakerId: parseInt(model, 10)
         });
         break;
     }
@@ -54,7 +58,8 @@ const Main = () => {
   const handleStop = () => {
     vscode.postMessage({
       type: EventTypes.stopTimer,
-      text: ""
+      text: "",
+      speakerId: 0
     });
 
     setIsRunning(false);
@@ -73,8 +78,9 @@ const Main = () => {
               setModel(selectedValue);
             }}
           >
+            {/* speakerId:3 = ずんだもん（ノーマル） */}
             <option value="0" selected>選択してください</option>
-            <option value="1">ずんだもん</option>
+            <option value="3">ずんだもん</option>
           </VSCodeDropdown>
 
           <label htmlFor="mode">モード選択</label>
@@ -98,7 +104,7 @@ const Main = () => {
             }}
           >
             <option value="0" selected>選択してください</option>
-            <option value="3">3秒</option>  {/* デモ用 */}
+            <option value="10">10秒</option>  {/* デモ用 */}
             <option value="300">5分</option>
           </VSCodeDropdown>
         </div>

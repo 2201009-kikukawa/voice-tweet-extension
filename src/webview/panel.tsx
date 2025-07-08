@@ -14,17 +14,18 @@ const Sidebar = () => {
   useEffect(() => {
     vscode.postMessage({
       type: EventTypes.initTimer,
-      text: ""
+      text: "",
+      speakerId: 0
     });
 
-    const handleInitMessage = (event: MessageEvent) => {
-      if (event.data?.type === EventTypes.receiveMessage) {
-        setMessage(event.data.text);
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === EventTypes.receiveMessage) {
+        setMessage(event.data.text || ""); // パネルを開いている間リアルタイムでメッセージを更新
       }
     };
 
-    window.addEventListener("message", handleInitMessage);
-    return () => window.removeEventListener("message", handleInitMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, []);
 
   return (
@@ -32,7 +33,8 @@ const Sidebar = () => {
       {message && message.trim() !== "" &&
         <div>
           <p className="speechBubble">{message}</p>
-      </div>}
+        </div>
+      }
     </>
   );
 };
