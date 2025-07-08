@@ -2,11 +2,11 @@ import { WebviewView } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
 import { lastMessage } from "./SidebarEventListener";
 
-export let sidebarWebviewView: WebviewView | undefined;
+export let panelWebviewView: WebviewView | undefined;
 
-export class SidebarEventListener {
+export class PanelEventListener {
   public setWebviewMessageListener(webviewView: WebviewView) {
-    sidebarWebviewView = webviewView;
+    panelWebviewView = webviewView;
     webviewView.webview.onDidReceiveMessage((message: EventListenerProps) => {
       const type = message.type;
 
@@ -14,8 +14,10 @@ export class SidebarEventListener {
         case EventTypes.initTimer:
           webviewView.webview.postMessage({
             type: EventTypes.receiveMessage,
-            text: lastMessage
+            text: lastMessage,
+            speakerId: 0
           });
+          break;
         default:
           console.warn(`Unknown message type: ${type}`);
       }

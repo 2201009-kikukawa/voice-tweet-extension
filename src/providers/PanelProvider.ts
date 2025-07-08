@@ -8,7 +8,7 @@ import {
 } from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
-import { SidebarEventListener } from "../listener/PanelEventListener";
+import { PanelEventListener } from "../listener/PanelEventListener";
 
 export class SidebarProvider implements WebviewViewProvider {
   public static readonly viewType = "voice-tweet-explorer";
@@ -27,7 +27,7 @@ export class SidebarProvider implements WebviewViewProvider {
 
     webviewView.webview.html = this._getWebviewContent(webviewView.webview, this._extensionUri);
 
-    const listener = new SidebarEventListener();
+    const listener = new PanelEventListener();
     listener.setWebviewMessageListener(webviewView);
   }
 
@@ -42,7 +42,7 @@ export class SidebarProvider implements WebviewViewProvider {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; media-src https:;">
           <link rel="stylesheet" href="${stylesUri}" />
           <title>Sample</title>
         </head>
