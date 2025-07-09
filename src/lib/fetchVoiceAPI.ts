@@ -7,17 +7,17 @@ interface res {
   mp3DownloadUrl: string;
 }
 
-let txt: string = "";
-let speaker: number = 0;
-
 export class fetchVoiceAPI {
+  private static txt = "";
+  private static speaker = 0;
+
   constructor(inputTxt: string, speakerId: number) {
-    txt = inputTxt;
-    speaker = speakerId;
+    fetchVoiceAPI.txt = inputTxt;
+    fetchVoiceAPI.speaker = speakerId;
   }
 
   public async playVoice(): Promise<string | undefined> {
-    const url = `https://api.tts.quest/v3/voicevox/synthesis?text=${txt}&speaker=${speaker}`;
+    const url = `https://api.tts.quest/v3/voicevox/synthesis?text=${fetchVoiceAPI.txt}&speaker=${fetchVoiceAPI.speaker}`;
     const headers = {
       'Content-Type': 'application/json',
     };

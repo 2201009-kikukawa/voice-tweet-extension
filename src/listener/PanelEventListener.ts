@@ -1,6 +1,6 @@
 import { WebviewView } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
-import { lastMessage } from "./SidebarEventListener";
+import { SidebarEventListener } from "./SidebarEventListener";
 
 export let panelWebviewView: WebviewView | undefined;
 
@@ -14,7 +14,7 @@ export class PanelEventListener {
         case EventTypes.initTimer:
           webviewView.webview.postMessage({
             type: EventTypes.receiveMessage,
-            text: lastMessage,
+            text: SidebarEventListener.lastMessage || "",
             speakerId: 0
           });
           break;

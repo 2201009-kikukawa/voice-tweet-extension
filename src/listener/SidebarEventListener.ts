@@ -5,12 +5,12 @@ import { fetchVoiceAPI } from "../lib/fetchVoiceAPI";
 import { AudioPlayer } from "../utilities/audioPlayer";
 import { panelWebviewView } from "./PanelEventListener";
 
-let timer: NodeJS.Timeout | undefined; // タイマー管理
-let isRunning = false; // タイマーが動作中かどうか
-export let lastMessage: string | undefined; // サイドバーに表示する文言
-export let audioUrl: string | undefined;
 
 export class SidebarEventListener {
+  private static timer: NodeJS.Timeout | undefined; // タイマー管理
+  private static isRunning = false; // タイマーが動作中かどうか
+  public static lastMessage: string | undefined; // サイドバーに表示する文言
+
   public setWebviewMessageListener(webviewView: WebviewView) {
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
       const type = message.type;
@@ -29,7 +29,7 @@ export class SidebarEventListener {
           await AudioPlayer.init();
           webviewView.webview.postMessage({
             type: EventTypes.initTimer,
-            isRunning: isRunning
+            isRunning: SidebarEventListener.isRunning,
           });
           break;
 
@@ -44,43 +44,42 @@ export class SidebarEventListener {
 
       // タイマー開始
       async function startInterval(interval: number, speakerId: number) {
-        clearInterval(timer);
-        isRunning = true;
+        clearInterval(SidebarEventListener.timer);
+        SidebarEventListener.isRunning = true;
 
         // 最初のメッセージを送信
         await sendRandomMessage(speakerId);
 
-        timer = setInterval(async () => {
+        SidebarEventListener.timer = setInterval(async () => {
           await sendRandomMessage(speakerId);
         }, interval * 1000);
       }
 
       // タイマー停止
       function stopInterval() {
-        if (isRunning) {
-          clearInterval(timer);
-          isRunning = false;
-          lastMessage = "";
+        if (SidebarEventListener.timer) {
+          clearInterval(SidebarEventListener.timer);
+          SidebarEventListener.isRunning = false;
+          SidebarEventListener.lastMessage = "";
         }
       }
 
       // メッセージ送信
       async function sendRandomMessage(speakerId: number) {
         try {
-          lastMessage = getRandomMessage();
-          console.log(`音声メッセージを再生します: ${lastMessage}`);
+          SidebarEventListener.lastMessage = getRandomMessage();
+          console.log(`音声メッセージを再生します: ${SidebarEventListener.lastMessage}`);
 
           // パネルにメッセージを送信
           if (panelWebviewView) {
             panelWebviewView.webview.postMessage({
               type: EventTypes.receiveMessage,
-              text: lastMessage,
+              text: SidebarEventListener.lastMessage,
               speakerId: speakerId
             });
           }
 
-          audioUrl = await sendVoice(speakerId, lastMessage);
-
+          const audioUrl = await sendVoice(speakerId, SidebarEventListener.lastMessage);
           if (audioUrl) {
             await AudioPlayer.playFromUrl(audioUrl);
             console.log("音声再生が完了しました");
