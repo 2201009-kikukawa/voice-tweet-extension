@@ -10,7 +10,7 @@ declare const acquireVsCodeApi: () => {
 const vscode = acquireVsCodeApi();
 
 const Main = () => {
-  const [model, setModel] = useState<string>("");
+  const [speaker, setSpeaker] = useState<string>("");
   const [mode, setMode] = useState<string>("");
   const [interval, setInterval] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -18,7 +18,8 @@ const Main = () => {
   useEffect(() => {
     vscode.postMessage({
       type: EventTypes.initTimer,
-      text: ""
+      text: "",
+      speakerId: 0
     });
 
     const handleMessage = (event: MessageEvent) => {
@@ -34,16 +35,19 @@ const Main = () => {
 
   const handleStart = () => {
     switch (interval) {
-      case "3":
+      case "10":
         vscode.postMessage({
           type: EventTypes.startTimer,
-          text: "3",
+          text: "10",
+          speakerId: parseInt(speaker, 10)
         });
         break;
+
       case "300":
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "300",
+          speakerId: parseInt(speaker, 10)
         });
         break;
     }
@@ -54,7 +58,8 @@ const Main = () => {
   const handleStop = () => {
     vscode.postMessage({
       type: EventTypes.stopTimer,
-      text: ""
+      text: "",
+      speakerId: 0
     });
 
     setIsRunning(false);
@@ -65,16 +70,17 @@ const Main = () => {
       <div className="container">
         <h3>つぶやきエディタ</h3>
         <div className="selector-wrap">
-          <label htmlFor="model">音声モデル</label>
+          <label htmlFor="speaker">音声モデル</label>
           <VSCodeDropdown
-            id="model"
+            id="speaker"
             onChange={(e: any) => {
               const selectedValue = (e.target as HTMLSelectElement).value;
-              setModel(selectedValue);
+              setSpeaker(selectedValue);
             }}
           >
+            {/* speakerId:3 = ずんだもん（ノーマル） */}
             <option value="0" selected>選択してください</option>
-            <option value="1">ずんだもん</option>
+            <option value="3">ずんだもん</option>
           </VSCodeDropdown>
 
           <label htmlFor="mode">モード選択</label>
@@ -98,7 +104,7 @@ const Main = () => {
             }}
           >
             <option value="0" selected>選択してください</option>
-            <option value="3">3秒</option>  {/* デモ用 */}
+            <option value="10">10秒</option>  {/* デモ用 */}
             <option value="300">5分</option>
           </VSCodeDropdown>
         </div>

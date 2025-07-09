@@ -8,11 +8,10 @@ import {
 } from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
-import { EventListener } from "../listener/SidebarEventListener";
+import { SidebarEventListener } from "../listener/SidebarEventListener";
 
 export class ViewProvider implements WebviewViewProvider {
   public static readonly viewType = "voice-tweet";
-
   constructor(private readonly _extensionUri: Uri) { }
 
   public resolveWebviewView(
@@ -27,7 +26,7 @@ export class ViewProvider implements WebviewViewProvider {
 
     webviewView.webview.html = this._getWebviewContent(webviewView.webview, this._extensionUri);
 
-    const listener = new EventListener();
+    const listener = new SidebarEventListener();
     listener.setWebviewMessageListener(webviewView);
   }
 
