@@ -10,7 +10,7 @@ declare const acquireVsCodeApi: () => {
 const vscode = acquireVsCodeApi();
 
 const Main = () => {
-  const [model, setModel] = useState<string>("");
+  const [speaker, setSpeaker] = useState<string>("");
   const [mode, setMode] = useState<string>("");
   const [interval, setInterval] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -39,7 +39,7 @@ const Main = () => {
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "10",
-          speakerId: parseInt(model, 10)
+          speakerId: parseInt(speaker, 10)
         });
         break;
 
@@ -47,7 +47,7 @@ const Main = () => {
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "300",
-          speakerId: parseInt(model, 10)
+          speakerId: parseInt(speaker, 10)
         });
         break;
     }
@@ -70,12 +70,12 @@ const Main = () => {
       <div className="container">
         <h3>つぶやきエディタ</h3>
         <div className="selector-wrap">
-          <label htmlFor="model">音声モデル</label>
+          <label htmlFor="speaker">音声モデル</label>
           <VSCodeDropdown
-            id="model"
+            id="speaker"
             onChange={(e: any) => {
               const selectedValue = (e.target as HTMLSelectElement).value;
-              setModel(selectedValue);
+              setSpeaker(selectedValue);
             }}
           >
             {/* speakerId:3 = ずんだもん（ノーマル） */}
