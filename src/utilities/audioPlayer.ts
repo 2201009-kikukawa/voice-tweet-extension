@@ -22,7 +22,7 @@ export class AudioPlayer {
       const buffer = await this.downloadFile(audioUrl);
 
       // 一時ファイルに保存
-      const fileName = `voice_${Date.now()}.${this.getFileExtension(audioUrl)}`;
+      const fileName = `voice_${Date.now()}.wav`;
       const filePath = path.join(this.tempDir, fileName);
       fs.writeFileSync(filePath, buffer);
 
@@ -59,12 +59,6 @@ export class AudioPlayer {
         })
         .on("error", reject);
     });
-  }
-
-  private static getFileExtension(url: string): string {
-    if (url.includes(".mp3")) { return "mp3"; }
-    if (url.includes(".wav")) { return "wav"; }
-    return "mp3"; // デフォルト
   }
 
   private static async playFile(filePath: string): Promise<void> {

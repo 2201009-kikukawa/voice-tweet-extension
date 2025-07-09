@@ -23,7 +23,7 @@ export class fetchVoiceAPI {
     };
 
     try {
-      const data = await fetchData(url, headers);
+      const data = await fetchData(url);
       if (data.success && data.wavDownloadUrl) {
         return data.wavDownloadUrl;
       } else {
@@ -37,11 +37,11 @@ export class fetchVoiceAPI {
   }
 }
 
-const fetchData = async (url: string, headers: HeadersInit): Promise<res> => {
+const fetchData = async (url: string): Promise<res> => {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error("response error");
   }
-  const data: res = await response.json();
-  return data;
+
+  return await response.json();
 };
