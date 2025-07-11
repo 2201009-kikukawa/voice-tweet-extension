@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { VSCodeButton, VSCodeDropdown } from "@vscode/webview-ui-toolkit/react";
 import { EventListenerProps, EventTypes } from "../types/classNames";
+import { VOICE_MODELS } from "../const";
 
 // VSCode API使用
 declare const acquireVsCodeApi: () => {
@@ -10,7 +11,7 @@ declare const acquireVsCodeApi: () => {
 const vscode = acquireVsCodeApi();
 
 const Main = () => {
-  const [speaker, setSpeaker] = useState<string>("");
+  const [speakerStyle, setSpeakerStyle] = useState<string>("");
   const [mode, setMode] = useState<string>("");
   const [interval, setInterval] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -33,21 +34,44 @@ const Main = () => {
   }, []
   );
 
+  const choiceSpeakerStyle = (selectedSpeaker: string) => {
+    VOICE_MODELS.forEach(element => {
+      if (element.name === selectedSpeaker) {
+        const speakerStyleDropdown = document.getElementById("speaker_style") as HTMLSelectElement;
+        speakerStyleDropdown.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "選択してください";
+        defaultOption.selected = true;
+        speakerStyleDropdown.appendChild(defaultOption);
+
+        element.styles.forEach(style => {
+          const option = document.createElement("option");
+          option.value = String(style.id);
+          option.text = style.name;
+          speakerStyleDropdown.appendChild(option);
+        });
+      }
+    });
+  };
+
   const handleStart = () => {
     switch (interval) {
       case "10":
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "10",
-          speakerId: parseInt(speaker, 10)
+          speakerId: parseInt(speakerStyle, 10)
         });
+        console.log(speakerStyle);
         break;
 
       case "300":
         vscode.postMessage({
           type: EventTypes.startTimer,
           text: "300",
-          speakerId: parseInt(speaker, 10)
+          speakerId: parseInt(speakerStyle, 10)
         });
         break;
     }
@@ -75,12 +99,27 @@ const Main = () => {
             id="speaker"
             onChange={(e: any) => {
               const selectedValue = (e.target as HTMLSelectElement).value;
-              setSpeaker(selectedValue);
+              choiceSpeakerStyle(selectedValue);
             }}
           >
-            {/* speakerId:3 = ずんだもん（ノーマル） */}
-            <option value="0" selected>選択してください</option>
-            <option value="3">ずんだもん</option>
+            <option value="" selected>選択してください</option>
+            {VOICE_MODELS.map((model) => (
+              <option key={model.name} value={model.name}>
+                {model.name}
+              </option>
+            ))}
+          </VSCodeDropdown>
+          <a href="https://voicevox.hiroshiba.jp/" id="sample">サンプルはこちらから</a>
+
+          <label htmlFor="speaker_style">モデルスタイル</label>
+          <VSCodeDropdown
+            id="speaker_style"
+            onchange={(e: any) => {
+              const selectedValue = (e.target as HTMLSelectElement).value;
+              setSpeakerStyle(selectedValue);
+            }}
+          >
+            <option value="" selected>選択してください</option>
           </VSCodeDropdown>
 
           <label htmlFor="mode">モード選択</label>
@@ -91,7 +130,7 @@ const Main = () => {
               setMode(selectedValue);
             }}
           >
-            <option value="0" selected>選択してください</option>
+            <option value="" selected>選択してください</option>
             <option value="1">褒め</option>
           </VSCodeDropdown>
 
@@ -103,7 +142,7 @@ const Main = () => {
               setInterval(selectedValue);
             }}
           >
-            <option value="0" selected>選択してください</option>
+            <option value="" selected>選択してください</option>
             <option value="10">10秒</option>  {/* デモ用 */}
             <option value="300">5分</option>
           </VSCodeDropdown>
