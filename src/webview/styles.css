@@ -6,6 +6,12 @@
   padding: 0 1rem;
 }
 
+#sample {
+  width: fit-content;
+  align-self: end;
+  font-size: .7rem;
+}
+
 .selector-wrap {
   display: flex;
   flex-direction: column;
