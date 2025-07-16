@@ -18,6 +18,19 @@ export class AudioPlayer {
 
   static async playFromUrl(audioUrl: string): Promise<void> {
     try {
+      // URLの検証
+      if (!audioUrl || audioUrl.trim() === "") {
+        throw new Error("音声URLが空です");
+      }
+
+      try {
+        new URL(audioUrl);
+      } catch (urlError) {
+        throw new Error(`無効な音声URL: ${audioUrl}`);
+      }
+
+      console.log(`音声再生開始: ${audioUrl}`);
+
       // 音声ファイルをダウンロード
       const buffer = await this.downloadFile(audioUrl);
 
@@ -28,6 +41,7 @@ export class AudioPlayer {
 
       // プラットフォーム別に音声再生
       await this.playFile(filePath);
+      console.log("音声再生が完了しました");
 
       // 再生後に一時ファイルを削除（少し遅延させる）
       setTimeout(() => {
@@ -43,21 +57,80 @@ export class AudioPlayer {
 
   private static downloadFile(url: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const protocol = url.startsWith("https:") ? https : http;
+      console.log(`音声ファイルダウンロード開始: ${url}`);
 
-      protocol
-        .get(url, (response) => {
-          if (response.statusCode !== 200) {
-            reject(new Error(`Failed to fetch audio: ${response.statusCode}`));
-            return;
-          }
+      const downloadWithRedirect = (downloadUrl: string, redirectCount = 0) => {
+        if (redirectCount > 5) {
+          reject(new Error("Too many redirects"));
+          return;
+        }
 
-          const chunks: Buffer[] = [];
-          response.on("data", (chunk) => chunks.push(chunk));
-          response.on("end", () => resolve(Buffer.concat(chunks)));
-          response.on("error", reject);
-        })
-        .on("error", reject);
+        const protocol = downloadUrl.startsWith("https:") ? https : http;
+
+        const request = protocol
+          .get(downloadUrl, {
+            headers: {
+              'User-Agent': 'VSCode-Voice-Extension/1.0.0'
+            }
+          }, (response) => {
+            console.log(`ダウンロードレスポンス: ${response.statusCode} ${response.statusMessage}`);
+            console.log(`Headers:`, response.headers);
+
+            // リダイレクトの処理
+            if (response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 303 || response.statusCode === 307 || response.statusCode === 308) {
+              const location = response.headers.location;
+              if (location) {
+                console.log(`リダイレクト先: ${location}`);
+                downloadWithRedirect(location, redirectCount + 1);
+                return;
+              } else {
+                reject(new Error(`Redirect response without location header: ${response.statusCode}`));
+                return;
+              }
+            }
+
+            if (response.statusCode !== 200) {
+              const errorMessage = `Failed to fetch audio: ${response.statusCode} ${response.statusMessage}`;
+              console.error(errorMessage);
+              console.error(`URL: ${downloadUrl}`);
+              reject(new Error(errorMessage));
+              return;
+            }
+
+            const chunks: Buffer[] = [];
+            response.on("data", (chunk) => chunks.push(chunk));
+            response.on("end", () => {
+              console.log(`音声ファイルダウンロード完了: ${chunks.length} chunks received`);
+              const buffer = Buffer.concat(chunks);
+              console.log(`Total buffer size: ${buffer.length} bytes`);
+
+              // 空のファイルチェック
+              if (buffer.length === 0) {
+                reject(new Error("Downloaded file is empty"));
+                return;
+              }
+
+              resolve(buffer);
+            });
+            response.on("error", (error) => {
+              console.error(`Download stream error: ${error}`);
+              reject(error);
+            });
+          })
+          .on("error", (error) => {
+            console.error(`HTTP request error: ${error}`);
+            reject(error);
+          });
+
+        // タイムアウト設定（30秒）
+        request.setTimeout(30000, () => {
+          console.error("Download timeout");
+          request.destroy();
+          reject(new Error("Download timeout"));
+        });
+      };
+
+      downloadWithRedirect(url);
     });
   }
 
