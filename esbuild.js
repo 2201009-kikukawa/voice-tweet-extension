@@ -31,16 +31,6 @@ const webviewConfig = {
   format: "esm",
   entryPoints: ["./src/webview/sidebar.tsx"],
   outfile: "./out/webview.js",
-  plugins: [
-    // Copy webview css files to `out` directory unaltered
-    copy({
-      resolveFrom: "cwd",
-      assets: {
-        from: ["./src/webview/*.css"],
-        to: ["./out"],
-      },
-    }),
-  ],
 };
 
 const sidebarWebviewConfig = {
