@@ -46,14 +46,20 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "node ./esbuild.js",
+    "compile": "npm run build:css && node ./esbuild.js",
+    "build:css": "postcss src/webview/styles.css -o out/styles.css",
+    "watch:css": "postcss src/webview/styles.css -o out/styles.css --watch",
+    "watch:js": "node ./esbuild.js --watch",
     "package": "vsce package",
-    "watch": "node ./esbuild.js --watch",
+    "watch": "npm-run-all -p watch:*",
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/glob": "^8.0.0",
     "@types/node": "16.x",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
     "@types/vscode": "^1.93.1",
     "@types/vscode-webview": "^1.57.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
@@ -62,15 +68,15 @@
     "esbuild-plugin-copy": "^2.0.1",
     "eslint": "^8.26.0",
     "glob": "^8.0.3",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
     "prettier": "^2.8.1",
+    "tailwindcss": "^4.1.11",
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   }
