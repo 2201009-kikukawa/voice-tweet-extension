@@ -4,6 +4,9 @@ export enum EventTypes {
   receiveMessage = "receiveMessage",
   stopTimer = "stopTimer",
   choiceSpeaker = "choiceSpeaker",
+  openSettingTab = "openSettingTab",
+  getImageUris = "getImageUris",
+  setImageUris = "setImageUris",
 };
 
 export type EventListenerProps = {
