@@ -22,18 +22,19 @@ export class SidebarProvider implements WebviewViewProvider {
   ) {
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [Uri.joinPath(this._extensionUri, "out")],
+      localResourceRoots: [Uri.joinPath(this._extensionUri, "out")]
     };
 
     webviewView.webview.html = this._getWebviewContent(webviewView.webview, this._extensionUri);
 
-    const listener = new PanelEventListener();
+    const listener = new PanelEventListener(this._extensionUri);
     listener.setWebviewMessageListener(webviewView);
   }
 
   private _getWebviewContent(webview: Webview, extensionUri: Uri) {
     const webviewUri = getUri(webview, extensionUri, ["out", "panel.js"]);
     const stylesUri = getUri(webview, extensionUri, ["out", "styles.css"]);
+    const iconUri = getUri(webview, extensionUri, ["out", "codicon.css"]);
     const nonce = getNonce();
 
     return /*html*/ `
@@ -42,8 +43,9 @@ export class SidebarProvider implements WebviewViewProvider {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; media-src https:;">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; 'unsafe-inline'; script-src 'nonce-${nonce}'; media-src https:; font-src ${webview.cspSource}; img-src ${webview.cspSource} data:;">
           <link rel="stylesheet" href="${stylesUri}" />
+          <link rel="stylesheet" href="${iconUri}">
           <title>Sample</title>
         </head>
         <body>
