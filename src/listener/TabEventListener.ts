@@ -1,12 +1,12 @@
-import { WebviewView } from "vscode";
+import { Uri, WebviewPanel, WebviewView } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
 import { MESSAGE_LIST } from "../const";
 import { fetchVoiceAPI } from "../lib/fetchVoiceAPI";
 import { AudioPlayer } from "../utilities/audioPlayer";
 import { panelWebviewView } from "./PanelEventListener";
 
+export class TabEventListener {
 
-export class SidebarEventListener {
   private static timer: NodeJS.Timeout | undefined; // タイマー管理
   private static isRunning = false; // タイマーが動作中かどうか
   private static isPlayingAudio = false; // 音声再生中かどうか
@@ -15,7 +15,7 @@ export class SidebarEventListener {
   private static nextPlayTime = 0; // 次回再生予定時刻（Unix timestamp）
   public static lastMessage: string | undefined; // サイドバーに表示する文言
 
-  public setWebviewMessageListener(webviewView: WebviewView) {
+  public setWebviewMessageListener(webviewView: WebviewPanel, context: Uri) {
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
       const type = message.type;
       const text = message.text;
@@ -31,9 +31,38 @@ export class SidebarEventListener {
         case EventTypes.initTimer:
           // AudioPlayerを初期化
           await AudioPlayer.init();
+
+          // 画像のURIを作成
+          const imageUris = {
+            "ずんだもん": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'zundamon.png')
+            ).toString(),
+            "四国めたん": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'metan.png')
+            ).toString(),
+            "春日部つむぎ": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'tsumugi.png')
+            ).toString(),
+            "九州そら": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'sora.png')
+            ).toString(),
+            "中国うさぎ": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'usagi.png')
+            ).toString(),
+            "中部つるぎ": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'tsurugi.png')
+            ).toString(),
+            "東北きりたん": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'kiritan.png')
+            ).toString(),
+            "東北イタコ": webviewView.webview.asWebviewUri(
+              Uri.joinPath(context, 'out', 'characters', 'itako.png')
+            ).toString(),
+          };
           webviewView.webview.postMessage({
             type: EventTypes.initTimer,
-            isRunning: SidebarEventListener.isRunning,
+            isRunning: TabEventListener.isRunning,
+            imageUris: imageUris,
           });
           break;
 
@@ -48,11 +77,11 @@ export class SidebarEventListener {
 
       // タイマー開始
       async function startInterval(interval: number, speakerId: number) {
-        clearInterval(SidebarEventListener.timer);
-        SidebarEventListener.isRunning = true;
-        SidebarEventListener.intervalTime = interval;
-        SidebarEventListener.currentSpeakerId = speakerId;
-        SidebarEventListener.nextPlayTime = Date.now();
+        clearInterval(TabEventListener.timer);
+        TabEventListener.isRunning = true;
+        TabEventListener.intervalTime = interval;
+        TabEventListener.currentSpeakerId = speakerId;
+        TabEventListener.nextPlayTime = Date.now();
 
         // 最初のメッセージを送信
         await sendRandomMessage(speakerId);
@@ -63,12 +92,12 @@ export class SidebarEventListener {
 
       // タイマー停止
       function stopInterval() {
-        if (SidebarEventListener.timer) {
-          clearInterval(SidebarEventListener.timer);
-          SidebarEventListener.isRunning = false;
-          SidebarEventListener.isPlayingAudio = false;
-          SidebarEventListener.lastMessage = "";
-          SidebarEventListener.nextPlayTime = 0;
+        if (TabEventListener.timer) {
+          clearInterval(TabEventListener.timer);
+          TabEventListener.isRunning = false;
+          TabEventListener.isPlayingAudio = false;
+          TabEventListener.lastMessage = "";
+          TabEventListener.nextPlayTime = 0;
         }
       }
 
@@ -76,25 +105,25 @@ export class SidebarEventListener {
       async function sendRandomMessage(speakerId: number) {
         try {
           // 既に音声再生中の場合はスキップ
-          if (SidebarEventListener.isPlayingAudio) {
+          if (TabEventListener.isPlayingAudio) {
             console.log("音声再生中のため、メッセージ送信をスキップします");
             return;
           }
 
-          SidebarEventListener.isPlayingAudio = true;
-          SidebarEventListener.lastMessage = getRandomMessage();
-          console.log(`音声メッセージを再生します: "${SidebarEventListener.lastMessage}" (話者ID: ${speakerId})`);
+          TabEventListener.isPlayingAudio = true;
+          TabEventListener.lastMessage = getRandomMessage();
+          console.log(`音声メッセージを再生します: "${TabEventListener.lastMessage}" (話者ID: ${speakerId})`);
 
           // パネルにメッセージを送信
           if (panelWebviewView) {
             panelWebviewView.webview.postMessage({
               type: EventTypes.receiveMessage,
-              text: SidebarEventListener.lastMessage,
+              text: TabEventListener.lastMessage,
               speakerId: speakerId
             });
           }
 
-          const audioUrl = await sendVoice(speakerId, SidebarEventListener.lastMessage);
+          const audioUrl = await sendVoice(speakerId, TabEventListener.lastMessage);
           if (audioUrl) {
             console.log(`音声URL取得成功、再生開始: ${audioUrl}`);
             // 音声再生が完了するまで待機
@@ -107,8 +136,8 @@ export class SidebarEventListener {
           console.error("音声再生中にエラーが発生しました:", error);
         } finally {
           // 音声再生完了後、次のメッセージをスケジュール
-          SidebarEventListener.isPlayingAudio = false;
-          if (SidebarEventListener.isRunning) {
+          TabEventListener.isPlayingAudio = false;
+          if (TabEventListener.isRunning) {
             scheduleNextMessage();
           }
         }
@@ -116,19 +145,19 @@ export class SidebarEventListener {
 
       // 次のメッセージをスケジュール
       function scheduleNextMessage() {
-        if (!SidebarEventListener.isRunning) {
+        if (!TabEventListener.isRunning) {
           return;
         }
 
         // 次回再生時刻を設定（現在時刻 + インターバル）
-        SidebarEventListener.nextPlayTime = Date.now() + (SidebarEventListener.intervalTime * 1000);
-        const delay = SidebarEventListener.nextPlayTime - Date.now();
+        TabEventListener.nextPlayTime = Date.now() + (TabEventListener.intervalTime * 1000);
+        const delay = TabEventListener.nextPlayTime - Date.now();
 
         console.log(`次のメッセージを${delay / 1000}秒後にスケジュール`);
 
-        SidebarEventListener.timer = setTimeout(async () => {
-          if (SidebarEventListener.isRunning && !SidebarEventListener.isPlayingAudio) {
-            await sendRandomMessage(SidebarEventListener.currentSpeakerId);
+        TabEventListener.timer = setTimeout(async () => {
+          if (TabEventListener.isRunning && !TabEventListener.isPlayingAudio) {
+            await sendRandomMessage(TabEventListener.currentSpeakerId);
           }
         }, delay);
       }
