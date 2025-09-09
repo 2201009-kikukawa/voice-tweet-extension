@@ -21,6 +21,21 @@ const extensionConfig = {
   entryPoints: ["./src/extension.ts"],
   outfile: "./out/extension.js",
   external: ["vscode"],
+  plugins: [
+    copy({
+      resolveFrom: "cwd",
+      assets: [
+        {
+          from: ["./src/assets/characters/*"],
+          to: ["./out/characters"],
+        },
+        {
+          from: ["./node_modules/@vscode/codicons/dist/codicon.ttf"],
+          to: ["./out"]
+        }
+      ]
+    })
+  ]
 };
 
 // Config for webview source code (to be run in a web-based context)
@@ -29,7 +44,7 @@ const webviewConfig = {
   ...baseConfig,
   target: "es2020",
   format: "esm",
-  entryPoints: ["./src/webview/sidebar.tsx"],
+  entryPoints: ["./src/webview/tab.tsx"],
   outfile: "./out/webview.js",
 };
 
@@ -74,6 +89,10 @@ const watchConfig = {
       });
       await build({
         ...webviewConfig,
+        ...watchConfig,
+      });
+      await build({
+        ...sidebarWebviewConfig,
         ...watchConfig,
       });
       console.log("[watch] build finished");

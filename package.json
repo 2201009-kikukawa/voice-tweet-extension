@@ -17,14 +17,6 @@
   ],
   "contributes": {
     "views": {
-      "voice-tweet": [
-        {
-          "type": "webview",
-          "id": "voice-tweet",
-          "name": "Voice Tweet",
-          "icon": "./resources/webview_icon.svg"
-        }
-      ],
       "explorer": [
         {
           "type": "webview",
@@ -33,22 +25,15 @@
           "icon": "./resources/webview_icon.svg"
         }
       ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "voice-tweet",
-          "title": "Voice Tweet",
-          "icon": "./resources/webview_icon.svg"
-        }
-      ]
     }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "npm run build:css && node ./esbuild.js",
+    "compile": "npm run build:css && npm run build:iconCss && node ./esbuild.js",
     "build:css": "postcss src/webview/styles.css -o out/styles.css",
+    "build:iconCss": "postcss node_modules/@vscode/codicons/dist/codicon.css -o out/codicon.css",
     "watch:css": "postcss src/webview/styles.css -o out/styles.css --watch",
+    "watch:iconCss": "postcss node_modules/@vscode/codicons/dist/codicon.css -o out/codicon.css --watch",
     "watch:js": "node ./esbuild.js --watch",
     "package": "vsce package",
     "watch": "npm-run-all -p watch:*",
@@ -80,7 +65,10 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-slider": "^1.3.5",
     "@radix-ui/react-slot": "^1.2.3",
+    "@vscode/codicons": "^0.0.38",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",

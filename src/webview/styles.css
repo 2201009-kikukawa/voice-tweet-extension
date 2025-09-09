@@ -75,3 +75,17 @@
   transform: skew(0, -25deg);
   transform-origin: right;
 }
+
+.setting {
+  width: fit-content;
+  justify-self: end;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.setting::before {
+  content: '\eb51';
+  font-family: 'codicon';
+  margin: .5rem .2rem 0 0;
+  vertical-align: text-top;
+}

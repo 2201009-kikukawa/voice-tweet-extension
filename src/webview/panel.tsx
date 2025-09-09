@@ -28,13 +28,20 @@ const Sidebar = () => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  const handleOpenSettingTab = () => {
+    vscode.postMessage({
+      type: EventTypes.openSettingTab,
+      text: "",
+      speakerId: 0
+    });
+  };
+
   return (
     <>
-      {message && message.trim() !== "" &&
-        <div>
-          <p className="speechBubble">{message}</p>
-        </div>
-      }
+      <div className="panel">
+        <p className="speechBubble">{message === "" ? "拡張機能の設定を行ってください" : message}</p>
+        <p onClick={handleOpenSettingTab} className="setting">設定</p>
+      </div>
     </>
   );
 };
