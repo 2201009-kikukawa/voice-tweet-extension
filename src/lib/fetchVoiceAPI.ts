@@ -25,9 +25,9 @@ export class fetchVoiceAPI {
     };
 
     // リトライ機能付きでAPI呼び出し
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 5; attempt++) {
       try {
-        console.log(`音声API呼び出し (試行 ${attempt}/3): ${url}`);
+        console.log(`音声API呼び出し (試行 ${attempt}/5): ${url}`);
         const data = await fetchData(url, headers);
         if (data.success && data.wavDownloadUrl) {
           console.log(`音声URL取得成功: ${data.wavDownloadUrl}`);
@@ -41,20 +41,20 @@ export class fetchVoiceAPI {
           if (isUrlValid) {
             return data.wavDownloadUrl;
           } else {
-            console.warn(`音声URLが無効です (試行 ${attempt}/3): ${data.wavDownloadUrl}`);
-            if (attempt < 3) {
+            console.warn(`音声URLが無効です (試行 ${attempt}/5): ${data.wavDownloadUrl}`);
+            if (attempt < 5) {
               await new Promise(resolve => setTimeout(resolve, 3000));
             }
           }
         } else {
-          console.warn(`音声データの取得に失敗しました (試行 ${attempt}/3):`, data);
-          if (attempt === 3) {
+          console.warn(`音声データの取得に失敗しました (試行 ${attempt}/5):`, data);
+          if (attempt === 5) {
             return undefined;
           }
         }
       } catch (error) {
-        console.error(`APIエラー (試行 ${attempt}/3)：`, error);
-        if (attempt === 3) {
+        console.error(`APIエラー (試行 ${attempt}/5)：`, error);
+        if (attempt === 5) {
           return undefined;
         }
         // 1秒待機してリトライ
