@@ -30,6 +30,7 @@ const Main = () => {
   const [interval, setInterval] = useState<string>("5");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [imageUris, setImageUris] = useState<{ [key: string]: string }>({});
+  const [isSamplePlaying, setIsSamplePlaying] = useState<boolean>(false);
 
   useEffect(() => {
     vscode.postMessage({
@@ -42,6 +43,9 @@ const Main = () => {
       if (event.data?.type === EventTypes.initTimer) {
         setIsRunning(event.data.isRunning);
         setImageUris(event.data.imageUris);
+      }
+      if (event.data?.type === EventTypes.sampleStop) {
+        setIsSamplePlaying(false);
       }
     };
 
@@ -113,6 +117,20 @@ const Main = () => {
     setIsRunning(false);
   };
 
+  const sampleStart = () => {
+    if (isSamplePlaying) {
+      return;
+    }
+
+    setIsSamplePlaying(true);
+
+    vscode.postMessage({
+      type: EventTypes.sampleStart,
+      text: "",
+      speakerId: parseInt(speakerStyle, 10)
+    });
+  };
+
   return (
     <>
       <div className="flex flex-col items-center mt-4">
@@ -164,6 +182,7 @@ const Main = () => {
                           setSpeakerStyle(selectedValue);
                         }}
                       >
+                        <option value="">選択してください</option>
                         {VOICE_MODELS.map((model) => (
                           model.name === key &&
                           model.styles.map((style) => (
@@ -198,12 +217,12 @@ const Main = () => {
 
                   <div className="mt-10">
                     <div className="grid grid-cols-2 gap-6 mt-4">
-                      <VSCodeButton appearance="secondary">
-                        <span className="codicon codicon-debug-start self-center"></span>
+                      <VSCodeButton appearance={isSamplePlaying ? "icon" : "secondary"} onClick={sampleStart}>
+                        {isSamplePlaying ? <span className="codicon codicon-loading self-center loading-animation mr-1"></span> : <span className="codicon codicon-debug-start self-center mr-1"></span>}
                         サンプルを再生
                       </VSCodeButton>
-                      <VSCodeButton appearance="primary">
-                        <span className="codicon codicon-save-as self-center"></span>
+                      <VSCodeButton appearance={isSamplePlaying ? "icon" : "primary"}>
+                        <span className="codicon codicon-save-as self-center mr-1"></span>
                         保存
                       </VSCodeButton>
                     </div>
