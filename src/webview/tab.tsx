@@ -198,11 +198,11 @@ const Main = () => {
 
                   <div className="mt-10">
                     <div className="grid grid-cols-2 gap-6 mt-4">
-                      <VSCodeButton appearance="primary">
+                      <VSCodeButton appearance="secondary">
                         <span className="codicon codicon-debug-start self-center"></span>
                         サンプルを再生
                       </VSCodeButton>
-                      <VSCodeButton appearance="secondary">
+                      <VSCodeButton appearance="primary">
                         <span className="codicon codicon-save-as self-center"></span>
                         保存
                       </VSCodeButton>
