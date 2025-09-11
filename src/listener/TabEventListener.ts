@@ -25,7 +25,20 @@ export class TabEventListener {
       switch (type) {
         // タイマー開始
         case EventTypes.startTimer:
-          await startInterval(parseInt(text, 10), speakerId);
+          try {
+            webviewView.dispose();
+          } catch (error) {
+            console.warn("タブのクローズに失敗しました:", error);
+          }
+
+          let intervalSeconds: number;
+          if (text === "0") {
+            intervalSeconds = 60; // 最小値1分に設定
+          } else {
+            intervalSeconds = parseInt(text, 10) * 60;
+          }
+
+          await startInterval(intervalSeconds, speakerId);
           break;
 
         // 初期化（タイマー動作状態チェック）
@@ -72,6 +85,7 @@ export class TabEventListener {
           stopInterval();
           break;
 
+        // サンプル再生
         case EventTypes.sampleStart:
           await sendSampleMessage(speakerId);
           break;
@@ -89,7 +103,7 @@ export class TabEventListener {
         TabEventListener.nextPlayTime = Date.now();
 
         // 最初のメッセージを送信
-        await sendRandomMessage(speakerId);
+        await sendFirstMessage(speakerId);
 
         // 次回再生時刻を設定
         scheduleNextMessage();
@@ -106,6 +120,7 @@ export class TabEventListener {
         }
       }
 
+      // サンプル再生
       async function sendSampleMessage(speakerId: number) {
         const sampleMessage = "これはサンプル音声です";
         TabEventListener.isSamplePlaying = true;
@@ -143,6 +158,46 @@ export class TabEventListener {
         }
       }
 
+      // 最初のメッセージを送信
+      async function sendFirstMessage(speakerId: number) {
+        const firstMessage = "保存が完了しました！";
+
+        try {
+          // 既に音声再生中の場合はスキップ
+          if (TabEventListener.isPlayingAudio) {
+            console.log("音声再生中のため、メッセージ送信をスキップします");
+            return;
+          }
+
+          TabEventListener.isPlayingAudio = true;
+          console.log(`音声メッセージを再生します: "${firstMessage}" (話者ID: ${speakerId})`);
+
+          const audioUrl = await sendVoice(speakerId, firstMessage);
+          if (audioUrl) {
+            console.log(`音声URL取得成功、再生開始: ${audioUrl}`);
+
+            // パネルにメッセージを送信
+            if (panelWebviewView) {
+              panelWebviewView.webview.postMessage({
+                type: EventTypes.receiveMessage,
+                text: firstMessage,
+                speakerId: speakerId
+              });
+            }
+
+            // 音声再生が完了するまで待機
+            await AudioPlayer.playFromUrl(audioUrl);
+            console.log("音声再生完了");
+          } else {
+            console.warn("音声URLが取得できませんでした");
+          }
+        } catch (error) {
+          console.error("音声再生中にエラーが発生しました:", error);
+        } finally {
+          TabEventListener.isPlayingAudio = false;
+        }
+      }
+
       // メッセージ送信
       async function sendRandomMessage(speakerId: number) {
         try {
@@ -156,18 +211,19 @@ export class TabEventListener {
           TabEventListener.lastMessage = getRandomMessage();
           console.log(`音声メッセージを再生します: "${TabEventListener.lastMessage}" (話者ID: ${speakerId})`);
 
-          // パネルにメッセージを送信
-          if (panelWebviewView) {
-            panelWebviewView.webview.postMessage({
-              type: EventTypes.receiveMessage,
-              text: TabEventListener.lastMessage,
-              speakerId: speakerId
-            });
-          }
-
           const audioUrl = await sendVoice(speakerId, TabEventListener.lastMessage);
           if (audioUrl) {
             console.log(`音声URL取得成功、再生開始: ${audioUrl}`);
+
+            // パネルにメッセージを送信
+            if (panelWebviewView) {
+              panelWebviewView.webview.postMessage({
+                type: EventTypes.receiveMessage,
+                text: TabEventListener.lastMessage,
+                speakerId: speakerId
+              });
+            }
+
             // 音声再生が完了するまで待機
             await AudioPlayer.playFromUrl(audioUrl);
             console.log("音声再生完了");
