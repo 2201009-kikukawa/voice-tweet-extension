@@ -85,24 +85,11 @@ const Main = () => {
   };
 
   const handleStart = () => {
-    switch (interval) {
-      case "10":
-        vscode.postMessage({
-          type: EventTypes.startTimer,
-          text: "10",
-          speakerId: parseInt(speakerStyle, 10)
-        });
-        console.log(speakerStyle);
-        break;
-
-      case "300":
-        vscode.postMessage({
-          type: EventTypes.startTimer,
-          text: "300",
-          speakerId: parseInt(speakerStyle, 10)
-        });
-        break;
-    }
+    vscode.postMessage({
+      type: EventTypes.startTimer,
+      text: interval, // 分を送信
+      speakerId: parseInt(speakerStyle, 10)
+    });
 
     setIsRunning(true);
   };
@@ -221,7 +208,7 @@ const Main = () => {
                         {isSamplePlaying ? <span className="codicon codicon-loading self-center loading-animation mr-1"></span> : <span className="codicon codicon-debug-start self-center mr-1"></span>}
                         サンプルを再生
                       </VSCodeButton>
-                      <VSCodeButton appearance={isSamplePlaying ? "icon" : "primary"}>
+                      <VSCodeButton appearance={isSamplePlaying ? "icon" : "primary"} onClick={handleStart}>
                         <span className="codicon codicon-save-as self-center mr-1"></span>
                         保存
                       </VSCodeButton>
