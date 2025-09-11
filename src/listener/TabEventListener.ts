@@ -14,6 +14,7 @@ export class TabEventListener {
   private static currentSpeakerId = 0; // 現在の話者ID
   private static nextPlayTime = 0; // 次回再生予定時刻（Unix timestamp）
   public static lastMessage: string | undefined; // サイドバーに表示する文言
+  private static isSamplePlaying = false; // サンプル再生中かどうか
 
   public setWebviewMessageListener(webviewView: WebviewPanel, context: Uri) {
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
@@ -71,6 +72,10 @@ export class TabEventListener {
           stopInterval();
           break;
 
+        case EventTypes.sampleStart:
+          await sendSampleMessage(speakerId);
+          break;
+
         default:
           console.warn(`Unknown message type: ${type}`);
       }
@@ -98,6 +103,43 @@ export class TabEventListener {
           TabEventListener.isPlayingAudio = false;
           TabEventListener.lastMessage = "";
           TabEventListener.nextPlayTime = 0;
+        }
+      }
+
+      async function sendSampleMessage(speakerId: number) {
+        const sampleMessage = "これはサンプル音声です";
+        TabEventListener.isSamplePlaying = true;
+
+        try {
+          // 既に音声再生中の場合はスキップ
+          if (TabEventListener.isPlayingAudio) {
+            console.log("音声再生中のため、メッセージ送信をスキップします");
+            return;
+          }
+
+          TabEventListener.isPlayingAudio = true;
+          console.log(`音声メッセージを再生します: "${sampleMessage}" (話者ID: ${speakerId})`);
+
+          const audioUrl = await sendVoice(speakerId, sampleMessage);
+          if (audioUrl) {
+            console.log(`音声URL取得成功、再生開始: ${audioUrl}`);
+            // 音声再生が完了するまで待機
+            await AudioPlayer.playFromUrl(audioUrl);
+            console.log("音声再生完了");
+          } else {
+            console.warn("音声URLが取得できませんでした");
+          }
+        } catch (error) {
+          console.error("音声再生中にエラーが発生しました:", error);
+        } finally {
+          TabEventListener.isPlayingAudio = false;
+          TabEventListener.isSamplePlaying = false;
+          // サンプル再生完了を通知
+          if (webviewView) {
+            webviewView.webview.postMessage({
+              type: EventTypes.sampleStop,
+            });
+          }
         }
       }
 

@@ -7,6 +7,8 @@ export enum EventTypes {
   openSettingTab = "openSettingTab",
   getImageUris = "getImageUris",
   setImageUris = "setImageUris",
+  sampleStart = "sampleStart",
+  sampleStop = "sampleStop",
 };
 
 export type EventListenerProps = {
