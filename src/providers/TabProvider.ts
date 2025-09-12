@@ -6,7 +6,7 @@ import {
 import * as vscode from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
-import { TabEventListener } from "@/listener/TabEventListener";
+import { TabEventListener } from "../listener/TabEventListener";
 
 export class TabProvider {
   constructor(private readonly _extensionUri: Uri) { }
