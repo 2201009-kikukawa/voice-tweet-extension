@@ -30,6 +30,9 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "npm run build:css && npm run build:iconCss && node ./esbuild.js",
+    "build:extension": "tsc -p tsconfig.extension.json",
+    "build:webview": "tsc -p src/webview/tsconfig.json",
+    "build": "npm run build:extension && npm run build:webview",
     "build:css": "postcss src/webview/styles.css -o out/styles.css",
     "build:iconCss": "postcss node_modules/@vscode/codicons/dist/codicon.css -o out/codicon.css",
     "watch:css": "postcss src/webview/styles.css -o out/styles.css --watch",
