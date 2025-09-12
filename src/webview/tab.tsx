@@ -31,6 +31,7 @@ const Main = () => {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [imageUris, setImageUris] = useState<{ [key: string]: string }>({});
   const [isSamplePlaying, setIsSamplePlaying] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     vscode.postMessage({
@@ -55,6 +56,7 @@ const Main = () => {
   );
 
   const handleOpenDialog = (key: string) => () => {
+    setError("");
     VOICE_MODELS.forEach(element => {
       if (element.name === key) {
         setSelectedSpeaker(element.name);
@@ -62,36 +64,23 @@ const Main = () => {
     });
   };
 
-  const choiceSpeakerStyle = (selectedSpeaker: string) => {
-    VOICE_MODELS.forEach(element => {
-      if (element.name === selectedSpeaker) {
-        const speakerStyleDropdown = document.getElementById("speaker_style") as HTMLSelectElement;
-        speakerStyleDropdown.innerHTML = "";
-
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.text = "選択してください";
-        defaultOption.selected = true;
-        speakerStyleDropdown.appendChild(defaultOption);
-
-        element.styles.forEach(style => {
-          const option = document.createElement("option");
-          option.value = String(style.id);
-          option.text = style.name;
-          speakerStyleDropdown.appendChild(option);
-        });
-      }
-    });
-  };
-
   const handleStart = () => {
+    if (isSamplePlaying) {
+      return;
+    }
+
+    if (speakerStyle === "" || speakerStyle === null) {
+      setError("ボイススタイルを選択してください");
+      return;
+    }
+
+    setIsRunning(true);
+
     vscode.postMessage({
       type: EventTypes.startTimer,
       text: interval, // 分を送信
       speakerId: parseInt(speakerStyle, 10)
     });
-
-    setIsRunning(true);
   };
 
   const handleStop = () => {
@@ -106,6 +95,11 @@ const Main = () => {
 
   const sampleStart = () => {
     if (isSamplePlaying) {
+      return;
+    }
+
+    if (speakerStyle === "" || speakerStyle === null) {
+      setError("ボイススタイルを選択してください");
       return;
     }
 
@@ -179,6 +173,7 @@ const Main = () => {
                           ))
                         ))}
                       </VSCodeDropdown>
+                      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
                     </div>
 
                     <div className="flex flex-col">
