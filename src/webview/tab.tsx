@@ -22,6 +22,8 @@ const Main = () => {
   const [imageUris, setImageUris] = useState<{ [key: string]: string }>({});
   const [isSamplePlaying, setIsSamplePlaying] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [selectedCharacter, setSelectedCharacter] = useState<string>("");
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     vscode.postMessage({
@@ -46,6 +48,8 @@ const Main = () => {
 
   const handleOpenDialog = (key: string) => () => {
     setError("");
+    setSelectedCharacter(key);
+    setIsDialogOpen(true);
     VOICE_MODELS.forEach((element) => {
       if (element.name === key) {
         setSelectedSpeaker(element.name);
@@ -64,6 +68,7 @@ const Main = () => {
     }
 
     setIsRunning(true);
+    setIsDialogOpen(false);
 
     vscode.postMessage({
       type: EventTypes.startTimer,
@@ -114,35 +119,34 @@ const Main = () => {
 
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-8 p-6">
         {Object.entries(imageUris).map(([key, imageUri]) => (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Card onClick={handleOpenDialog(key)} key={key}>
-                <CardContent>
-                  <img
-                    key={key}
-                    src={imageUri || ""}
-                    alt={key}
-                    className="w-full h-auto object-cover bg-gray-50"
-                  />
-                </CardContent>
-                <CardFooter>
-                  <p className="text-lg font-bold">{key}</p>
-                </CardFooter>
-              </Card>
-            </DialogTrigger>
+          <Card onClick={handleOpenDialog(key)} key={key}>
+            <CardContent>
+              <img
+                src={imageUri || ""}
+                alt={key}
+                className="w-full h-auto object-cover bg-gray-50"
+              />
+            </CardContent>
+            <CardFooter>
+              <p className="text-lg font-bold">{key}</p>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
 
-            {/* モーダルコンテンツ */}
-            <DialogContent>
-              <DialogHeader>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            {selectedCharacter && imageUris[selectedCharacter] && (
+              <>
                 <img
-                  key={key}
-                  src={imageUri || ""}
-                  alt={key}
+                  src={imageUris[selectedCharacter]}
+                  alt={selectedCharacter}
                   className="h-full object-cover bg-amber-50"
                 />
 
                 <div className="col-span-3 ml-4 grid grid-rows-[auto]">
-                  <h1 className="text-xl font-bold">{key}</h1>
+                  <h1 className="text-xl font-bold">{selectedCharacter}</h1>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="flex flex-col">
                       <label htmlFor="speaker_style" className="text-start">
@@ -157,7 +161,7 @@ const Main = () => {
                         <option value="">選択してください</option>
                         {VOICE_MODELS.map(
                           (model) =>
-                            model.name === key &&
+                            model.name === selectedCharacter &&
                             model.styles.map((style) => (
                               <option key={style.id} value={style.id}>
                                 {style.name}
@@ -216,11 +220,11 @@ const Main = () => {
                     </div>
                   </div>
                 </div>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        ))}
-      </div>
+              </>
+            )}
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
