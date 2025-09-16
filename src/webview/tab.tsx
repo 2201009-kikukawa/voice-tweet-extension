@@ -4,7 +4,13 @@ import { VSCodeButton, VSCodeDropdown } from "@vscode/webview-ui-toolkit/react";
 import { EventListenerProps, EventTypes } from "../types/classNames";
 import { VOICE_MODELS } from "../const";
 import { Card, CardContent, CardFooter } from "../components/Card";
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "../components/Dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/Dialog";
 import { Slider } from "../components/Slider";
 
 // VSCode API使用
@@ -135,94 +141,89 @@ const Main = () => {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            {selectedCharacter && imageUris[selectedCharacter] && (
-              <>
-                <img
-                  src={imageUris[selectedCharacter]}
-                  alt={selectedCharacter}
-                  className="h-full object-cover bg-amber-50"
-                />
-
-                <div className="col-span-3 ml-4 grid grid-rows-[auto]">
-                  <h1 className="text-xl font-bold">{selectedCharacter}</h1>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="flex flex-col">
-                      <label htmlFor="speaker_style" className="text-start">
-                        ボイススタイル
-                      </label>
-                      <VSCodeDropdown
-                        id="speaker_style"
-                        onchange={(e: any) => {
-                          const selectedValue = (e.target as HTMLSelectElement).value;
-                          setSpeakerStyle(selectedValue);
-                        }}>
-                        <option value="">選択してください</option>
-                        {VOICE_MODELS.map(
-                          (model) =>
-                            model.name === selectedCharacter &&
-                            model.styles.map((style) => (
-                              <option key={style.id} value={style.id}>
-                                {style.name}
-                              </option>
-                            ))
-                        )}
-                      </VSCodeDropdown>
-                      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-                    </div>
-
-                    <div className="flex flex-col">
-                      <label htmlFor="mode" className="text-start">
-                        モード選択
-                      </label>
-                      <VSCodeDropdown
-                        id="mode"
-                        onChange={(e: any) => {
-                          const selectedValue = (e.target as HTMLSelectElement).value;
-                          setMode(selectedValue);
-                        }}>
-                        <option value="1">褒め</option>
-                      </VSCodeDropdown>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <p className="mb-4">表示間隔：{interval === "0" ? "1" : interval}分</p>
-                    <Slider
-                      defaultValue={[5]}
-                      max={60}
-                      step={5}
-                      onValueChange={(value) => {
-                        setInterval(value[0].toString());
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-10">
-                    <div className="grid grid-cols-2 gap-6 mt-4">
-                      <VSCodeButton
-                        appearance={isSamplePlaying ? "icon" : "secondary"}
-                        onClick={sampleStart}>
-                        {isSamplePlaying ? (
-                          <span className="codicon codicon-loading self-center loading-animation mr-1"></span>
-                        ) : (
-                          <span className="codicon codicon-debug-start self-center mr-1"></span>
-                        )}
-                        サンプルを再生
-                      </VSCodeButton>
-                      <VSCodeButton
-                        appearance={isSamplePlaying ? "icon" : "primary"}
-                        onClick={handleStart}>
-                        <span className="codicon codicon-save-as self-center mr-1"></span>
-                        保存
-                      </VSCodeButton>
-                    </div>
-                  </div>
+        <DialogContent className="p-8">
+          <h1 className="text-center text-2xl font-bold">{selectedCharacter}</h1>
+          <div className="flex space-x-6">
+            <img
+              src={imageUris[selectedCharacter]}
+              alt={selectedCharacter}
+              className="w-1/3 h-auto object-cover bg-gray-50"
+            />
+            <div className="">
+              <div className="">
+                <div className="flex flex-col">
+                  <label htmlFor="speaker_style" className="text-start">
+                    ボイススタイル
+                  </label>
+                  <VSCodeDropdown
+                    id="speaker_style"
+                    onchange={(e: any) => {
+                      const selectedValue = (e.target as HTMLSelectElement).value;
+                      setSpeakerStyle(selectedValue);
+                    }}>
+                    <option value="">選択してください</option>
+                    {VOICE_MODELS.map(
+                      (model) =>
+                        model.name === selectedCharacter &&
+                        model.styles.map((style) => (
+                          <option key={style.id} value={style.id}>
+                            {style.name}
+                          </option>
+                        ))
+                    )}
+                  </VSCodeDropdown>
+                  {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
                 </div>
-              </>
-            )}
-          </DialogHeader>
+
+                <div className="flex flex-col">
+                  <label htmlFor="mode" className="text-start">
+                    モード選択
+                  </label>
+                  <VSCodeDropdown
+                    id="mode"
+                    onChange={(e: any) => {
+                      const selectedValue = (e.target as HTMLSelectElement).value;
+                      setMode(selectedValue);
+                    }}>
+                    <option value="1">褒め</option>
+                  </VSCodeDropdown>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <p className="mb-4">表示間隔：{interval === "0" ? "1" : interval}分</p>
+                <Slider
+                  defaultValue={[5]}
+                  max={60}
+                  step={5}
+                  onValueChange={(value) => {
+                    setInterval(value[0].toString());
+                  }}
+                />
+              </div>
+
+              <div className="mt-10">
+                <div className="grid grid-cols-2 gap-6 mt-4">
+                  <VSCodeButton
+                    appearance={isSamplePlaying ? "icon" : "secondary"}
+                    onClick={sampleStart}>
+                    {isSamplePlaying ? (
+                      <span className="codicon codicon-loading self-center loading-animation mr-1"></span>
+                    ) : (
+                      <span className="codicon codicon-debug-start self-center mr-1"></span>
+                    )}
+                    サンプルを再生
+                  </VSCodeButton>
+                  <VSCodeButton
+                    appearance={isSamplePlaying ? "icon" : "primary"}
+                    onClick={handleStart}>
+                    <span className="codicon codicon-save-as self-center mr-1"></span>
+                    保存
+                  </VSCodeButton>
+                </div>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>
