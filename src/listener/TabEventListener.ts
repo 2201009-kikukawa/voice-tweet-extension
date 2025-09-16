@@ -6,7 +6,6 @@ import { AudioPlayer } from "../utilities/audioPlayer";
 import { panelWebviewView } from "./PanelEventListener";
 
 export class TabEventListener {
-
   private static timer: NodeJS.Timeout | undefined; // タイマー管理
   private static isRunning = false; // タイマーが動作中かどうか
   private static isPlayingAudio = false; // 音声再生中かどうか
@@ -48,30 +47,30 @@ export class TabEventListener {
 
           // 画像のURIを作成
           const imageUris = {
-            "ずんだもん": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'zundamon.png')
-            ).toString(),
-            "四国めたん": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'metan.png')
-            ).toString(),
-            "春日部つむぎ": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'tsumugi.png')
-            ).toString(),
-            "九州そら": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'sora.png')
-            ).toString(),
-            "中国うさぎ": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'usagi.png')
-            ).toString(),
-            "中部つるぎ": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'tsurugi.png')
-            ).toString(),
-            "東北きりたん": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'kiritan.png')
-            ).toString(),
-            "東北イタコ": webviewView.webview.asWebviewUri(
-              Uri.joinPath(context, 'out', 'characters', 'itako.png')
-            ).toString(),
+            ずんだもん: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "zundamon.webp"))
+              .toString(),
+            四国めたん: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "metan.webp"))
+              .toString(),
+            春日部つむぎ: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "tsumugi.webp"))
+              .toString(),
+            九州そら: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "sora.webp"))
+              .toString(),
+            中国うさぎ: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "usagi.webp"))
+              .toString(),
+            中部つるぎ: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "tsurugi.webp"))
+              .toString(),
+            東北きりたん: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "kiritan.webp"))
+              .toString(),
+            東北イタコ: webviewView.webview
+              .asWebviewUri(Uri.joinPath(context, "out", "characters", "itako.webp"))
+              .toString(),
           };
           webviewView.webview.postMessage({
             type: EventTypes.initTimer,
@@ -181,7 +180,7 @@ export class TabEventListener {
               panelWebviewView.webview.postMessage({
                 type: EventTypes.receiveMessage,
                 text: firstMessage,
-                speakerId: speakerId
+                speakerId: speakerId,
               });
             }
 
@@ -209,7 +208,9 @@ export class TabEventListener {
 
           TabEventListener.isPlayingAudio = true;
           TabEventListener.lastMessage = getRandomMessage();
-          console.log(`音声メッセージを再生します: "${TabEventListener.lastMessage}" (話者ID: ${speakerId})`);
+          console.log(
+            `音声メッセージを再生します: "${TabEventListener.lastMessage}" (話者ID: ${speakerId})`
+          );
 
           const audioUrl = await sendVoice(speakerId, TabEventListener.lastMessage);
           if (audioUrl) {
@@ -220,7 +221,7 @@ export class TabEventListener {
               panelWebviewView.webview.postMessage({
                 type: EventTypes.receiveMessage,
                 text: TabEventListener.lastMessage,
-                speakerId: speakerId
+                speakerId: speakerId,
               });
             }
 
@@ -248,7 +249,7 @@ export class TabEventListener {
         }
 
         // 次回再生時刻を設定（現在時刻 + インターバル）
-        TabEventListener.nextPlayTime = Date.now() + (TabEventListener.intervalTime * 1000);
+        TabEventListener.nextPlayTime = Date.now() + TabEventListener.intervalTime * 1000;
         const delay = TabEventListener.nextPlayTime - Date.now();
 
         console.log(`次のメッセージを${delay / 1000}秒後にスケジュール`);

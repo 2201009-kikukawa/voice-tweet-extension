@@ -84,9 +84,9 @@
 }
 
 .setting::before {
-  content: '\eb51';
-  font-family: 'codicon';
-  margin: .5rem .2rem 0 0;
+  content: "\eb51";
+  font-family: "codicon";
+  margin: 0.5rem 0.2rem 0 0;
   vertical-align: text-top;
 }
 
