@@ -1,12 +1,12 @@
 {
   "name": "voice-tweet",
   "displayName": "Vice Tweet",
-  "description": "sample description",
+  "description": "コーディング中の寂しさを解消！VOICEVOXのキャラクターが、あなたのコーディング作業を音声で応援してくれるバーチャルアシスタントです。",
   "version": "0.0.1",
   "publisher": "VS-Modules",
   "repository": {
     "type": "git",
-    "url": "https://github.com/2201009-kikukawa/Sample-extension"
+    "url": "https://github.com/2201009-kikukawa/voice-tweet-extension"
   },
   "engines": {
     "vscode": "^1.93.1"
