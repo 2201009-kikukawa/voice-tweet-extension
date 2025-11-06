@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { VSCodeButton, VSCodeDropdown } from "@vscode/webview-ui-toolkit/react";
 import { EventListenerProps, EventTypes } from "../types/classNames";
 import { VOICE_MODELS } from "../const";
 import { Card, CardContent, CardFooter } from "../components/Card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../components/Dialog";
+import { Dialog, DialogContent } from "../components/Dialog";
 import { Slider } from "../components/Slider";
+import { Button, ButtonIcon, ButtonSpinner } from "../components/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../components/Select";
 
 // VSCode API使用
 declare const acquireVsCodeApi: () => {
@@ -21,8 +24,8 @@ const vscode = acquireVsCodeApi();
 
 const Main = () => {
   const [selectedSpeaker, setSelectedSpeaker] = useState<string>("");
-  const [speakerStyle, setSpeakerStyle] = useState<string>("");
-  const [mode, setMode] = useState<string>("");
+  const [speakerStyle, setSpeakerStyle] = useState<string | undefined>(undefined);
+  const [mode, setMode] = useState<string>("1");
   const [interval, setInterval] = useState<string>("5");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [imageUris, setImageUris] = useState<{ [key: string]: string }>({});
@@ -56,6 +59,7 @@ const Main = () => {
     setError("");
     setSelectedCharacter(key);
     setIsDialogOpen(true);
+    setSpeakerStyle(undefined);
     VOICE_MODELS.forEach((element) => {
       if (element.name === key) {
         setSelectedSpeaker(element.name);
@@ -68,7 +72,7 @@ const Main = () => {
       return;
     }
 
-    if (speakerStyle === "" || speakerStyle === null) {
+    if (!speakerStyle) {
       setError("ボイススタイルを選択してください");
       return;
     }
@@ -98,7 +102,7 @@ const Main = () => {
       return;
     }
 
-    if (speakerStyle === "" || speakerStyle === null) {
+    if (!speakerStyle) {
       setError("ボイススタイルを選択してください");
       return;
     }
@@ -155,23 +159,36 @@ const Main = () => {
                   <label htmlFor="speaker_style" className="text-start">
                     ボイススタイル
                   </label>
-                  <VSCodeDropdown
-                    id="speaker_style"
-                    onchange={(e: any) => {
-                      const selectedValue = (e.target as HTMLSelectElement).value;
-                      setSpeakerStyle(selectedValue);
-                    }}>
-                    <option value="">選択してください</option>
-                    {VOICE_MODELS.map(
-                      (model) =>
-                        model.name === selectedCharacter &&
-                        model.styles.map((style) => (
-                          <option key={style.id} value={style.id}>
-                            {style.name}
-                          </option>
-                        ))
-                    )}
-                  </VSCodeDropdown>
+                  <Select
+                    value={speakerStyle}
+                    onValueChange={(value: string) => {
+                      setSpeakerStyle(value);
+                      setError("");
+                    }}
+                    disabled={!selectedCharacter}>
+                    <SelectTrigger id="speaker_style" aria-label="ボイススタイル">
+                      <SelectValue placeholder="選択してください" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedCharacter ? (
+                        <SelectGroup>
+                          <SelectLabel>{selectedCharacter}</SelectLabel>
+                          {VOICE_MODELS.filter((model) => model.name === selectedCharacter).flatMap(
+                            (model) =>
+                              model.styles.map((style) => (
+                                <SelectItem key={style.id} value={style.id.toString()}>
+                                  {style.name}
+                                </SelectItem>
+                              ))
+                          )}
+                        </SelectGroup>
+                      ) : (
+                        <SelectGroup>
+                          <SelectLabel>キャラクターを選択してください</SelectLabel>
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
                   {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
                 </div>
 
@@ -179,14 +196,14 @@ const Main = () => {
                   <label htmlFor="mode" className="text-start">
                     モード選択
                   </label>
-                  <VSCodeDropdown
-                    id="mode"
-                    onChange={(e: any) => {
-                      const selectedValue = (e.target as HTMLSelectElement).value;
-                      setMode(selectedValue);
-                    }}>
-                    <option value="1">褒め</option>
-                  </VSCodeDropdown>
+                  <Select value={mode} onValueChange={setMode}>
+                    <SelectTrigger id="mode" aria-label="モード選択">
+                      <SelectValue placeholder="選択してください" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">褒め</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -204,22 +221,20 @@ const Main = () => {
 
               <div className="mt-10">
                 <div className="grid grid-cols-2 gap-6 mt-4">
-                  <VSCodeButton
-                    appearance={isSamplePlaying ? "icon" : "secondary"}
-                    onClick={sampleStart}>
-                    {isSamplePlaying ? (
-                      <span className="codicon codicon-loading self-center loading-animation mr-1"></span>
-                    ) : (
-                      <span className="codicon codicon-debug-start self-center mr-1"></span>
-                    )}
+                  <Button
+                    variant={isSamplePlaying ? "icon" : "secondary"}
+                    isLoading={isSamplePlaying}
+                    onClick={sampleStart}
+                    leftIcon={<ButtonIcon name="debug-start" />}
+                    loadingIcon={<ButtonSpinner />}>
                     サンプルを再生
-                  </VSCodeButton>
-                  <VSCodeButton
-                    appearance={isSamplePlaying ? "icon" : "primary"}
-                    onClick={handleStart}>
-                    <span className="codicon codicon-save-as self-center mr-1"></span>
+                  </Button>
+                  <Button
+                    variant={isSamplePlaying ? "icon" : "primary"}
+                    onClick={handleStart}
+                    leftIcon={<ButtonIcon name="save-as" />}>
                     保存
-                  </VSCodeButton>
+                  </Button>
                 </div>
               </div>
             </div>
