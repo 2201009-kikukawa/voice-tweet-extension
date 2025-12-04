@@ -5,6 +5,32 @@ import { fetchVoiceAPI } from "../lib/fetchVoiceAPI";
 import { AudioPlayer } from "../utilities/audioPlayer";
 import { panelWebviewView } from "./PanelEventListener";
 
+type StatusType = "initial" | "default" | "stopped";
+
+type StartTimerPayload = {
+  characterName?: string;
+  styleId?: string;
+  modeValue?: string;
+  modeLabel?: string;
+  intervalMinutes?: number;
+  remainingSeconds?: number;
+  isResume?: boolean;
+};
+
+type StopTimerPayload = {
+  reason?: "pause" | "reset";
+};
+
+type StatusSnapshot = {
+  status: StatusType;
+  characterName?: string;
+  styleId?: string;
+  modeValue?: string;
+  modeLabel?: string;
+  intervalMinutes?: number;
+  remainingSeconds?: number;
+};
+
 export class TabEventListener {
   private static timer: NodeJS.Timeout | undefined; // タイマー管理
   private static isRunning = false; // タイマーが動作中かどうか
@@ -14,6 +40,13 @@ export class TabEventListener {
   private static nextPlayTime = 0; // 次回再生予定時刻（Unix timestamp）
   public static lastMessage: string | undefined; // サイドバーに表示する文言
   private static isSamplePlaying = false; // サンプル再生中かどうか
+  private static currentStatus: StatusType = "initial";
+  private static currentCharacterName: string | null = null;
+  private static currentStyleId: string | null = null;
+  private static currentModeValue: string | null = null;
+  private static currentModeLabel: string | null = null;
+  private static currentIntervalMinutes: number | null = null;
+  private static pausedRemainingSeconds = 0;
 
   public setWebviewMessageListener(webviewView: WebviewPanel, context: Uri) {
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
@@ -23,13 +56,7 @@ export class TabEventListener {
 
       switch (type) {
         // タイマー開始
-        case EventTypes.startTimer:
-          try {
-            webviewView.dispose();
-          } catch (error) {
-            console.warn("タブのクローズに失敗しました:", error);
-          }
-
+        case EventTypes.startTimer: {
           let intervalSeconds: number;
           if (text === "0") {
             intervalSeconds = 60; // 最小値1分に設定
@@ -37,8 +64,11 @@ export class TabEventListener {
             intervalSeconds = parseInt(text, 10) * 60;
           }
 
-          await startInterval(intervalSeconds, speakerId);
+          const startPayload = (message.payload ?? {}) as StartTimerPayload;
+          TabEventListener.updateSnapshotFromPayload(startPayload, intervalSeconds);
+          await startInterval(intervalSeconds, speakerId, startPayload);
           break;
+        }
 
         // 初期化（タイマー動作状態チェック）
         case EventTypes.initTimer:
@@ -76,12 +106,17 @@ export class TabEventListener {
             type: EventTypes.initTimer,
             isRunning: TabEventListener.isRunning,
             imageUris: imageUris,
+            statusSnapshot: TabEventListener.createStatusSnapshot(),
           });
           break;
 
         // タイマー停止
         case EventTypes.stopTimer:
-          stopInterval();
+          stopInterval(((message.payload ?? {}) as StopTimerPayload).reason);
+          break;
+
+        case EventTypes.closeSettingTab:
+          webviewView.dispose();
           break;
 
         // サンプル再生
@@ -94,12 +129,28 @@ export class TabEventListener {
       }
 
       // タイマー開始
-      async function startInterval(interval: number, speakerId: number) {
-        clearInterval(TabEventListener.timer);
+      async function startInterval(
+        interval: number,
+        speakerId: number,
+        startPayload?: StartTimerPayload
+      ) {
+        clearTimeout(TabEventListener.timer);
+        TabEventListener.timer = undefined;
         TabEventListener.isRunning = true;
         TabEventListener.intervalTime = interval;
         TabEventListener.currentSpeakerId = speakerId;
-        TabEventListener.nextPlayTime = Date.now();
+        const isResume = Boolean(startPayload?.isResume);
+        const initialDelaySeconds =
+          typeof startPayload?.remainingSeconds === "number" && startPayload.remainingSeconds > 0
+            ? startPayload.remainingSeconds
+            : interval;
+        TabEventListener.nextPlayTime = Date.now() + initialDelaySeconds * 1000;
+        TabEventListener.pausedRemainingSeconds = initialDelaySeconds;
+
+        if (isResume) {
+          scheduleResumeMessage(initialDelaySeconds);
+          return;
+        }
 
         // 最初のメッセージを送信
         await sendFirstMessage(speakerId);
@@ -109,14 +160,32 @@ export class TabEventListener {
       }
 
       // タイマー停止
-      function stopInterval() {
+      function stopInterval(reason: "pause" | "reset" = "pause") {
         if (TabEventListener.timer) {
-          clearInterval(TabEventListener.timer);
-          TabEventListener.isRunning = false;
-          TabEventListener.isPlayingAudio = false;
-          TabEventListener.lastMessage = "";
-          TabEventListener.nextPlayTime = 0;
+          clearTimeout(TabEventListener.timer);
+          TabEventListener.timer = undefined;
         }
+
+        TabEventListener.isRunning = false;
+        TabEventListener.isPlayingAudio = false;
+
+        if (reason === "pause") {
+          const remainingSeconds = Math.max(
+            0,
+            Math.floor((TabEventListener.nextPlayTime - Date.now()) / 1000)
+          );
+          TabEventListener.pausedRemainingSeconds = remainingSeconds;
+          if (TabEventListener.currentCharacterName) {
+            TabEventListener.currentStatus = "stopped";
+          } else {
+            TabEventListener.resetSnapshot();
+          }
+        } else {
+          TabEventListener.resetSnapshot();
+        }
+
+        TabEventListener.lastMessage = "";
+        TabEventListener.nextPlayTime = 0;
       }
 
       // サンプル再生
@@ -261,6 +330,20 @@ export class TabEventListener {
         }, delay);
       }
 
+      function scheduleResumeMessage(delaySeconds: number) {
+        if (!TabEventListener.isRunning) {
+          return;
+        }
+
+        const resumeDelayMs = Math.max(0, delaySeconds * 1000);
+        console.log(`一時停止解除後、${delaySeconds}秒後に再開します`);
+        TabEventListener.timer = setTimeout(async () => {
+          if (TabEventListener.isRunning && !TabEventListener.isPlayingAudio) {
+            await sendRandomMessage(TabEventListener.currentSpeakerId);
+          }
+        }, resumeDelayMs);
+      }
+
       // メッセージをランダムに取得
       function getRandomMessage(): string {
         try {
@@ -294,5 +377,78 @@ export class TabEventListener {
         }
       }
     });
+  }
+
+  private static updateSnapshotFromPayload(payload: StartTimerPayload, intervalSeconds: number) {
+    if (!payload.characterName || !payload.styleId || !payload.modeValue) {
+      console.warn("startTimer payload is missing metadata", payload);
+      TabEventListener.resetSnapshot();
+      return;
+    }
+
+    const normalizedIntervalMinutes =
+      typeof payload.intervalMinutes === "number" && payload.intervalMinutes > 0
+        ? payload.intervalMinutes
+        : Math.max(1, Math.floor(intervalSeconds / 60));
+
+    TabEventListener.currentCharacterName = payload.characterName;
+    TabEventListener.currentStyleId = payload.styleId;
+    TabEventListener.currentModeValue = payload.modeValue;
+    TabEventListener.currentModeLabel = payload.modeLabel ?? payload.modeValue;
+    TabEventListener.currentIntervalMinutes = normalizedIntervalMinutes;
+    TabEventListener.currentStatus = "default";
+    const initialRemainingSeconds =
+      typeof payload.remainingSeconds === "number" && payload.remainingSeconds > 0
+        ? payload.remainingSeconds
+        : normalizedIntervalMinutes * 60;
+    TabEventListener.pausedRemainingSeconds = initialRemainingSeconds;
+  }
+
+  private static createStatusSnapshot(): StatusSnapshot | undefined {
+    if (TabEventListener.currentStatus === "initial") {
+      return { status: "initial" };
+    }
+
+    if (
+      !TabEventListener.currentCharacterName ||
+      !TabEventListener.currentStyleId ||
+      !TabEventListener.currentIntervalMinutes ||
+      !TabEventListener.currentModeValue
+    ) {
+      return undefined;
+    }
+
+    return {
+      status: TabEventListener.currentStatus,
+      characterName: TabEventListener.currentCharacterName,
+      styleId: TabEventListener.currentStyleId,
+      modeValue: TabEventListener.currentModeValue,
+      modeLabel: TabEventListener.currentModeLabel ?? undefined,
+      intervalMinutes: TabEventListener.currentIntervalMinutes,
+      remainingSeconds: TabEventListener.getSnapshotRemainingSeconds(),
+    };
+  }
+
+  private static getSnapshotRemainingSeconds(): number {
+    if (TabEventListener.currentStatus === "default") {
+      const diff = TabEventListener.nextPlayTime - Date.now();
+      return diff > 0 ? Math.floor(diff / 1000) : 0;
+    }
+
+    if (TabEventListener.currentStatus === "stopped") {
+      return Math.max(0, Math.floor(TabEventListener.pausedRemainingSeconds));
+    }
+
+    return 0;
+  }
+
+  private static resetSnapshot() {
+    TabEventListener.currentStatus = "initial";
+    TabEventListener.currentCharacterName = null;
+    TabEventListener.currentStyleId = null;
+    TabEventListener.currentModeValue = null;
+    TabEventListener.currentModeLabel = null;
+    TabEventListener.currentIntervalMinutes = null;
+    TabEventListener.pausedRemainingSeconds = 0;
   }
 }

@@ -5,14 +5,17 @@ export enum EventTypes {
   stopTimer = "stopTimer",
   choiceSpeaker = "choiceSpeaker",
   openSettingTab = "openSettingTab",
+  closeSettingTab = "closeSettingTab",
   getImageUris = "getImageUris",
   setImageUris = "setImageUris",
   sampleStart = "sampleStart",
   sampleStop = "sampleStop",
-};
+  resetSettings = "resetSettings",
+}
 
 export type EventListenerProps = {
   type: EventTypes;
   text: string;
   speakerId: number;
+  payload?: Record<string, unknown>;
 };
