@@ -26,7 +26,7 @@ const ICONS: Record<StatusType, React.ReactNode> = {
       viewBox="0 0 48 48"
       role="img"
       aria-label="Add character"
-      className="h-12 w-12 text-white/80">
+      className="h-24 w-24 text-white/80">
       <circle
         cx="24"
         cy="24"
@@ -62,7 +62,7 @@ const ICONS: Record<StatusType, React.ReactNode> = {
 const TITLES: Record<StatusType, (characterName?: string | null) => string> = {
   initial: () => "キャラクターが選択されていません",
   default: (characterName) => `${characterName}`,
-  stopped: () => "音声が停止しました",
+  stopped: (characterName) => `${characterName}`,
 };
 
 const DESCRIPTIONS: Record<StatusType, (characterName?: string | null) => string> = {
@@ -113,12 +113,12 @@ const StatusCard = ({
       aria-live="polite"
       data-status={status}>
       <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
-        <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[24px] border border-white/25 bg-white/5">
+        <div className="flex h-40 w-40 items-center justify-center overflow-hidden rounded-[24px] border border-white/25 bg-white/5">
           {imageSrc ? (
             <img
               src={imageSrc}
               alt={characterName ?? "キャラクター画像"}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover bg-gray-50"
             />
           ) : (
             ICONS[status]
