@@ -8,19 +8,94 @@ export interface VoiceStyle {
   name: string;
 }
 
-export const MESSAGE_LIST = [
-  "確実に進んでる、えらいよ～！",
-  "コツコツ書いてるの尊敬する！",
-  "もうそこまで書いたの！？すごすぎる！",
-  "どんどん形になっていってるよ～！さすが！",
-  "積み重ねたものは君の力になる！",
-  "失敗だって糧になる！がんばって！",
-  "書いた行数だけ夢に近づいてるよ～！",
-  "小さな一歩が大きな進歩に！",
-  "集中してる君、かっこいいよ！",
-  "一行一行が未来を創る！がんばれ！",
-  "その調子、その調子！どんどん進もう！",
-];
+export type MessageMode = "1" | "2" | "3";
+
+type MessageModeDefinition = {
+  label: string;
+  messages: string[];
+};
+
+export const DEFAULT_MESSAGE_MODE: MessageMode = "1";
+
+const MESSAGE_MODE_DEFINITIONS: Record<MessageMode, MessageModeDefinition> = {
+  "1": {
+    label: "褒め",
+    messages: [
+      "確実に進んでる、えらいよ～！",
+      "コツコツ書いてるの尊敬する！",
+      "もうそこまで書いたの！？すごすぎる！",
+      "どんどん形になっていってるよ～！さすが！",
+      "積み重ねたものは君の力になる！",
+      "失敗だって糧になる！がんばって！",
+      "書いた行数だけ夢に近づいてるよ～！",
+      "小さな一歩が大きな進歩に！",
+      "集中してる君、かっこいいよ！",
+      "一行一行が未来を創る！がんばれ！",
+      "その調子、その調子！どんどん進もう！",
+    ],
+  },
+  "2": {
+    label: "熱血",
+    messages: [
+      "限界なんて幻だ！魂でコンパイルを通せ！",
+      "休むのはまだ早い！脳みそのCPUをオーバークロックさせろ！",
+      "エラーごときでへこたれるな！バグは成長の糧だ！",
+      "キーボードが燃え尽きるまで叩き続けろ！",
+      "今日という日は、残りの人生の最初のコミットだ！",
+      "過去を振り返るな！カーソルは常に前にしか進まない！",
+      "気合だ！気合だ！デバッグは気合でなんとかなる！",
+      "迷ったら前へ！Enterキーをッターン！と叩き込め！",
+      "一番の敵は妥協する自分だ！絶対にあきらめるな！",
+      "お前の本気はそんなもんじゃないはずだ！もっと熱くなれよ！！",
+    ],
+  },
+  "3": {
+    label: "だじゃれ",
+    messages: [
+      "こんな良いコード書くなんて、こーどな技術だね！",
+      "そのソース、そーっすね！",
+      "フォント変えた？…ふぉんとに？",
+      "キーボードを叩いて、きぼーを持とう！",
+      "マウスの調子は、まずまぅずだね。",
+      "Wi-Fiがつながって、わーいふぁい！",
+      "エラーをえらーんだ覚えはないよ！",
+      "キャッシュをけっしゅ！",
+      "アップデート作業で、もうあっぷあっぷ…",
+      "サーバーのデータ、サバ読んでない？",
+    ],
+  },
+};
+
+const MESSAGE_MODE_ORDER: MessageMode[] = ["1", "2", "3"];
+
+export const MESSAGE_MODE_OPTIONS = MESSAGE_MODE_ORDER.map((value) => ({
+  value,
+  label: MESSAGE_MODE_DEFINITIONS[value].label,
+}));
+
+export const isMessageMode = (value?: string | null): value is MessageMode => {
+  if (!value) {
+    return false;
+  }
+  return Object.prototype.hasOwnProperty.call(MESSAGE_MODE_DEFINITIONS, value);
+};
+
+export const normalizeMessageMode = (value?: string | null): MessageMode => {
+  if (isMessageMode(value)) {
+    return value;
+  }
+  return DEFAULT_MESSAGE_MODE;
+};
+
+export const getMessageModeLabel = (value?: string | null): string => {
+  const key = normalizeMessageMode(value);
+  return MESSAGE_MODE_DEFINITIONS[key].label;
+};
+
+export const getMessagesByMode = (value?: string | null): string[] => {
+  const key = normalizeMessageMode(value);
+  return MESSAGE_MODE_DEFINITIONS[key].messages;
+};
 
 export const VOICE_MODELS: VoiceModel[] = [
   {

@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { StatusType } from "../../components/StatusCard";
-import { VOICE_MODELS } from "../../const";
+import {
+  VOICE_MODELS,
+  DEFAULT_MESSAGE_MODE,
+  getMessageModeLabel,
+  normalizeMessageMode,
+  type MessageMode,
+} from "../../const";
 import { EventTypes } from "../../types/classNames";
 import { vscode } from "../lib/vscode";
 
@@ -8,7 +14,7 @@ type StatusSnapshot = {
   status: StatusType;
   characterName?: string;
   styleId?: string;
-  modeValue?: string;
+  modeValue?: MessageMode;
   modeLabel?: string;
   intervalMinutes?: number;
   remainingSeconds?: number;
@@ -30,7 +36,7 @@ type StatusCardViewModel = {
   styleName: string | null;
   styleId: string | null;
   modeLabel: string | null;
-  modeValue: string | null;
+  modeValue: MessageMode | null;
   intervalMinutes: number | null;
   nextPlayLabel: string;
   imageSrc?: string;
@@ -41,7 +47,7 @@ type DialogState = {
   characterName: string;
   imageSrc: string;
   speakerStyle?: string;
-  mode: string;
+  mode: MessageMode;
   sliderMinutes: number;
   isSamplePlaying: boolean;
   errorMessage: string;
@@ -66,7 +72,7 @@ type ApplyCardRunningStateArgs = {
   characterName: string;
   styleIdValue: string;
   intervalMinutesValue: number;
-  modeValue: string;
+  modeValue: MessageMode;
   modeLabelOverride?: string | null;
   imageSrcOverride?: string;
   statusOverride?: StatusType;
@@ -82,12 +88,6 @@ export type UseStatusCardControllerResult = {
   dialogHandlers: DialogHandlers;
   handleCharacterCardClick: (characterName: string) => void;
 };
-
-const MODE_LABELS: Record<string, string> = {
-  "1": "褒め",
-};
-
-const getModeLabel = (value: string) => MODE_LABELS[value] ?? MODE_LABELS["1"];
 
 const findStyleName = (characterName: string, styleId?: string) => {
   if (!characterName || !styleId) {
@@ -144,7 +144,7 @@ const initialCardState: StatusCardViewModel = {
 
 export const useStatusCardController = (): UseStatusCardControllerResult => {
   const [speakerStyle, setSpeakerStyle] = useState<string | undefined>(undefined);
-  const [mode, setMode] = useState<string>("1");
+  const [mode, setMode] = useState<MessageMode>(DEFAULT_MESSAGE_MODE);
   const [interval, setIntervalValue] = useState<string>("5");
   const [imageUris, setImageUris] = useState<Record<string, string>>({});
   const [isSamplePlaying, setIsSamplePlaying] = useState<boolean>(false);
@@ -263,7 +263,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
         characterName,
         styleName,
         styleId: styleIdValue,
-        modeLabel: modeLabelOverride ?? getModeLabel(modeValue),
+        modeLabel: modeLabelOverride ?? getMessageModeLabel(modeValue),
         modeValue,
         intervalMinutes: intervalMinutesValue,
         nextPlayLabel: formatCountdownLabel(countdownSecondsValue),
@@ -277,7 +277,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
     setCardState({ ...initialCardState });
     setSelectedCharacter("");
     setSpeakerStyle(undefined);
-    setMode("1");
+    setMode(DEFAULT_MESSAGE_MODE);
     setIntervalValue("5");
     setError("");
     resetCountdown();
@@ -295,12 +295,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
         return;
       }
 
-      if (
-        !snapshot.characterName ||
-        !snapshot.styleId ||
-        !snapshot.intervalMinutes ||
-        !snapshot.modeValue
-      ) {
+      if (!snapshot.characterName || !snapshot.styleId || !snapshot.intervalMinutes) {
         return;
       }
 
@@ -309,16 +304,18 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
           ? snapshot.remainingSeconds
           : snapshot.intervalMinutes * 60;
 
+      const normalizedModeValue = normalizeMessageMode(snapshot.modeValue);
+
       setSelectedCharacter(snapshot.characterName);
       setSpeakerStyle(snapshot.styleId);
-      setMode(snapshot.modeValue);
+      setMode(normalizedModeValue);
       setIntervalValue(snapshot.intervalMinutes.toString());
 
       applyCardRunningState({
         characterName: snapshot.characterName,
         styleIdValue: snapshot.styleId,
         intervalMinutesValue: snapshot.intervalMinutes,
-        modeValue: snapshot.modeValue,
+        modeValue: normalizedModeValue,
         modeLabelOverride: snapshot.modeLabel ?? null,
         imageSrcOverride: imageMap[snapshot.characterName],
         statusOverride: snapshot.status,
@@ -383,13 +380,13 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
 
       if (cardState.characterName === characterName) {
         setSpeakerStyle(cardState.styleId ?? undefined);
-        setMode(cardState.modeValue ?? "1");
+        setMode(cardState.modeValue ?? DEFAULT_MESSAGE_MODE);
         if (cardState.intervalMinutes) {
           setIntervalValue(cardState.intervalMinutes.toString());
         }
       } else {
         setSpeakerStyle(undefined);
-        setMode("1");
+        setMode(DEFAULT_MESSAGE_MODE);
         setIntervalValue("5");
       }
     },
@@ -409,7 +406,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
   }, []);
 
   const handleModeChange = useCallback((value: string) => {
-    setMode(value);
+    setMode(normalizeMessageMode(value));
   }, []);
 
   const handleSliderChange = useCallback((value: number) => {
@@ -447,7 +444,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
       intervalMinutesValue: number;
       styleIdValue: string;
       characterNameValue: string;
-      modeValue: string;
+      modeValue: MessageMode;
       modeLabel: string;
       remainingSeconds?: number;
       isResume?: boolean;
@@ -504,7 +501,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
 
     const normalizedIntervalMinutes = normalizeIntervalValue(interval);
 
-    const modeLabel = getModeLabel(mode);
+    const modeLabel = getMessageModeLabel(mode);
     const countdownStartSeconds = normalizedIntervalMinutes * 60;
 
     setIsDialogOpen(false);
@@ -549,15 +546,11 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
   }, [cardState.characterName, clearCountdownInterval, postStopTimer]);
 
   const handleCardResume = useCallback(() => {
-    if (
-      !cardState.characterName ||
-      !cardState.styleId ||
-      !cardState.intervalMinutes ||
-      !cardState.modeValue
-    ) {
+    if (!cardState.characterName || !cardState.styleId || !cardState.intervalMinutes) {
       return;
     }
-    const modeLabel = cardState.modeLabel ?? getModeLabel(cardState.modeValue);
+    const resolvedModeValue = normalizeMessageMode(cardState.modeValue);
+    const modeLabel = cardState.modeLabel ?? getMessageModeLabel(resolvedModeValue);
     const resumeSeconds =
       typeof countdownSeconds === "number" && countdownSeconds > 0
         ? countdownSeconds
@@ -566,7 +559,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
       intervalMinutesValue: cardState.intervalMinutes,
       styleIdValue: cardState.styleId,
       characterNameValue: cardState.characterName,
-      modeValue: cardState.modeValue,
+      modeValue: resolvedModeValue,
       modeLabel,
       remainingSeconds: resumeSeconds,
       isResume: true,

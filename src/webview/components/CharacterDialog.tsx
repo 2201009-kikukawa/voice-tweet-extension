@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/Select";
-import type { VoiceModel } from "../../const";
+import type { VoiceModel, MessageMode } from "../../const";
+import { MESSAGE_MODE_OPTIONS } from "../../const";
 
 type CharacterDialogProps = {
   open: boolean;
@@ -19,7 +20,7 @@ type CharacterDialogProps = {
   characterName: string;
   imageSrc: string;
   speakerStyle?: string;
-  mode: string;
+  mode: MessageMode;
   sliderMinutes: number;
   isSamplePlaying: boolean;
   errorMessage?: string;
@@ -100,7 +101,11 @@ const CharacterDialog = ({
                   <SelectValue placeholder="選択してください" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">褒め</SelectItem>
+                  {MESSAGE_MODE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

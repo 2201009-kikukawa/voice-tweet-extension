@@ -42,7 +42,7 @@ const Main = () => {
             <Card
               onClick={() => handleCharacterCardClick(key)}
               key={key}
-              className="flex h-[360px] flex-col rounded-[28px] border-white/15 pb-0 shadow-md transition hover:shadow-xl">
+              className="flex h-[360px] flex-col gap-0 rounded-[28px] border-white/15 pb-0 shadow-md transition hover:shadow-xl">
               <CardContent className="h-[280px]">
                 <img
                   src={imageUri || ""}
@@ -50,7 +50,7 @@ const Main = () => {
                   className="h-full w-full object-cover bg-gray-100"
                 />
               </CardContent>
-              <CardFooter className="mt-auto w-full border-t border-white/10 px-5 py-4">
+              <CardFooter className="w-full border-t border-white/10 px-5 py-4">
                 <p className="text-lg font-semibold text-white/90">{key}</p>
               </CardFooter>
             </Card>
