@@ -58,9 +58,9 @@ const CharacterDialog = ({
           <img
             src={imageSrc}
             alt={characterName || "キャラクター"}
-            className="w-1/3 h-auto object-cover bg-gray-50"
+            className="w-1/4 h-auto object-cover bg-gray-50"
           />
-          <div>
+          <div className="w-3/4">
             <div className="flex flex-col">
               <label htmlFor="speaker_style" className="text-start">
                 ボイススタイル
@@ -75,7 +75,6 @@ const CharacterDialog = ({
                 <SelectContent>
                   {characterName ? (
                     <SelectGroup>
-                      <SelectLabel>{characterName}</SelectLabel>
                       {selectedVoiceModel?.styles.map((style) => (
                         <SelectItem key={style.id} value={style.id.toString()}>
                           {style.name}
