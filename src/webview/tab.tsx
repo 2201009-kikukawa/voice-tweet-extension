@@ -19,9 +19,9 @@ const Main = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center mt-4">
-        <h1 className="text-2xl font-bold">キャラクターボイス設定</h1>
-        <p className="mt-4">
+      <div className="mt-8 flex flex-col items-center gap-4 px-3 text-center md:mt-10 md:px-5">
+        <h1 className="text-3xl font-bold tracking-wide md:text-4xl">キャラクターボイス設定</h1>
+        <p className="w-full max-w-4xl text-lg text-white/80">
           お気に入りのキャラクターを選んで、コーディングの時間をもっと楽しく彩りましょう。
           <br />
           カードをクリックすると、声のスタイルやモードを自由にカスタマイズできます。
@@ -36,8 +36,8 @@ const Main = () => {
         onReset={cardHandlers.onReset}
       />
 
-      <div className="mt-8 w-full px-6">
-        <div className="mx-auto max-w-6xl grid gap-7 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
+      <div className="mt-8 w-full px-3 md:px-5">
+        <div className="mx-auto w-full max-w-[min(1360px,100%)] grid gap-7 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
           {Object.entries(imageUris).map(([key, imageUri]) => (
             <Card
               onClick={() => handleCharacterCardClick(key)}
