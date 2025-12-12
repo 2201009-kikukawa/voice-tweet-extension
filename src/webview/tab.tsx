@@ -36,21 +36,26 @@ const Main = () => {
         onReset={cardHandlers.onReset}
       />
 
-      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-8 p-6">
-        {Object.entries(imageUris).map(([key, imageUri]) => (
-          <Card onClick={() => handleCharacterCardClick(key)} key={key}>
-            <CardContent>
-              <img
-                src={imageUri || ""}
-                alt={key}
-                className="w-full h-auto object-cover bg-gray-50"
-              />
-            </CardContent>
-            <CardFooter>
-              <p className="text-lg font-bold">{key}</p>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="mt-8 w-full px-6">
+        <div className="mx-auto max-w-6xl grid gap-7 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
+          {Object.entries(imageUris).map(([key, imageUri]) => (
+            <Card
+              onClick={() => handleCharacterCardClick(key)}
+              key={key}
+              className="flex h-[360px] flex-col rounded-[28px] border-white/15 pb-0 shadow-md transition hover:shadow-xl">
+              <CardContent className="h-[280px]">
+                <img
+                  src={imageUri || ""}
+                  alt={key}
+                  className="h-full w-full object-cover bg-gray-100"
+                />
+              </CardContent>
+              <CardFooter className="mt-auto w-full border-t border-white/10 px-5 py-4">
+                <p className="text-lg font-semibold text-white/90">{key}</p>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <CharacterDialog

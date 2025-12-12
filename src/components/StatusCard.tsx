@@ -103,7 +103,7 @@ const StatusCard = ({
   return (
     <Card
       className={cn(
-        "w-full max-w-5xl rounded-[32px] border border-white/15 bg-[#050505] px-8 py-6 text-white",
+        "w-full max-w-6xl rounded-[32px] border border-white/15 bg-[#050505] px-8 py-6 text-white",
         "flex flex-col gap-6 md:flex-row md:items-center",
         "shadow-[inset_0_2px_0_rgba(255,255,255,0.08)]",
         "cursor-default",
