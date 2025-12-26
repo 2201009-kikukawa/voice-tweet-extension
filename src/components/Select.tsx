@@ -13,23 +13,25 @@ const SelectGroup = ({ ...props }: React.ComponentProps<typeof SelectPrimitive.G
   <SelectPrimitive.Group data-slot="select-group" {...props} />
 );
 
-const SelectValue = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Value>) => (
+const SelectValue = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Value>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Value>
+>(({ className, ...props }, ref) => (
   <SelectPrimitive.Value
+    ref={ref}
     data-slot="select-value"
     className={cn("text-[var(--vscode-dropdown-foreground,#f3f3f3)]", className)}
     {...props}
   />
-);
+));
+SelectValue.displayName = SelectPrimitive.Value.displayName;
 
-const SelectTrigger = ({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger>) => (
+const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
+    ref={ref}
     data-slot="select-trigger"
     className={cn(
       "inline-flex h-9 w-full items-center justify-between rounded-md border border-[var(--vscode-dropdown-border,#3c3c3c)] bg-[var(--vscode-dropdown-background,#3c3c3c)] px-3 text-sm text-[var(--vscode-dropdown-foreground,#f3f3f3)] transition focus:outline-none focus:ring-2 focus:ring-[var(--focus-border,#0078d4)] disabled:cursor-not-allowed disabled:opacity-50",
@@ -41,16 +43,16 @@ const SelectTrigger = ({
       <ChevronDownIcon className="ml-2 size-4" aria-hidden="true" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
-);
+));
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
-const SelectContent = ({
-  className,
-  children,
-  position = "popper",
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) => (
+const SelectContent = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
+      ref={ref}
       data-slot="select-content"
       position={position}
       className={cn(
@@ -68,13 +70,15 @@ const SelectContent = ({
       </SelectPrimitive.ScrollDownButton>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
-);
+));
+SelectContent.displayName = SelectPrimitive.Content.displayName;
 
-const SelectLabel = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Label>) => (
+const SelectLabel = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
+>(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
+    ref={ref}
     data-slot="select-label"
     className={cn(
       "px-2 py-1 text-xs font-medium text-[var(--vscode-descriptionForeground,#a6a6a6)]",
@@ -82,14 +86,15 @@ const SelectLabel = ({
     )}
     {...props}
   />
-);
+));
+SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
-const SelectItem = ({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) => (
+const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
+    ref={ref}
     data-slot="select-item"
     className={cn(
       "relative flex w-full cursor-default select-none items-center gap-2 rounded-sm px-8 py-2 text-sm text-[var(--vscode-dropdown-foreground,#f3f3f3)] outline-none focus:bg-[var(--vscode-list-focusBackground,#094771)] focus:text-[var(--vscode-list-focusForeground,#ffffff)] data-[state=checked]:bg-[var(--vscode-list-activeSelectionBackground,#04395e)]",
@@ -103,18 +108,21 @@ const SelectItem = ({
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
-);
+));
+SelectItem.displayName = SelectPrimitive.Item.displayName;
 
-const SelectSeparator = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Separator>) => (
+const SelectSeparator = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
+>(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
+    ref={ref}
     data-slot="select-separator"
     className={cn("-mx-1 my-1 h-px bg-[var(--vscode-dropdown-border,#3c3c3c)]", className)}
     {...props}
   />
-);
+));
+SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 export {
   Select,

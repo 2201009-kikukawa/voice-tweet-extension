@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { Card } from "./Card";
+import { Button, ButtonIcon } from "./button";
 import { cn } from "../lib/utils";
 
 type StatusType = "initial" | "default" | "stopped";
@@ -162,35 +163,31 @@ const StatusCard = ({
       </div>
       {showControls ? (
         <div className="absolute right-8 top-8 flex flex-row gap-4">
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={primaryAction}
             disabled={primaryDisabled}
             className={cn(
-              "flex min-w-[150px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-semibold text-white transition",
+              "min-w-[150px] rounded-lg px-6 py-3 text-base font-semibold text-white",
               isRunning ? "bg-emerald-600 hover:bg-emerald-500" : "bg-sky-600 hover:bg-sky-500",
               primaryDisabled && "cursor-not-allowed opacity-60"
             )}>
-            <span
-              aria-hidden="true"
-              className={cn(
-                "codicon text-lg",
-                isRunning ? "codicon-debug-pause" : "codicon-debug-start"
-              )}
-            />
+            <ButtonIcon name={isRunning ? "debug-pause" : "debug-start"} className="text-lg" />
             {isRunning ? "停止" : "再生"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
             onClick={onReset}
             disabled={resetDisabled}
             className={cn(
-              "flex min-w-[150px] items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-red-500",
+              "min-w-[150px] rounded-lg px-6 py-3 text-base font-semibold text-white",
               resetDisabled && "cursor-not-allowed opacity-60"
             )}>
-            <span aria-hidden="true" className="codicon codicon-trash" />
+            <ButtonIcon name="trash" className="text-lg" />
             設定解除
-          </button>
+          </Button>
         </div>
       ) : null}
     </Card>
