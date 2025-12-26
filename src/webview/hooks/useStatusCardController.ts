@@ -28,7 +28,12 @@ type InitTimerMessage = {
 
 type SampleStopMessage = { type: EventTypes.sampleStop };
 
-type WebviewInboundMessage = InitTimerMessage | SampleStopMessage;
+type SyncStatusMessage = {
+  type: EventTypes.syncStatus;
+  statusSnapshot?: StatusSnapshot;
+};
+
+type WebviewInboundMessage = InitTimerMessage | SampleStopMessage | SyncStatusMessage;
 
 type StatusCardViewModel = {
   status: StatusType;
@@ -154,6 +159,11 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
   const [cardState, setCardState] = useState<StatusCardViewModel>(initialCardState);
   const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
+  const imageUrisRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    imageUrisRef.current = imageUris;
+  }, [imageUris]);
 
   const clearCountdownInterval = useCallback(() => {
     if (countdownIntervalRef.current !== null) {
@@ -177,13 +187,19 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
 
   const startCountdown = useCallback(
     (initialSeconds: number) => {
-      if (!Number.isFinite(initialSeconds) || initialSeconds <= 0) {
+      if (!Number.isFinite(initialSeconds)) {
         resetCountdown();
         return;
       }
 
+      const normalizedSeconds = Math.floor(initialSeconds);
+      if (normalizedSeconds <= 0) {
+        setStaticCountdown(0);
+        return;
+      }
+
       clearCountdownInterval();
-      setCountdownSeconds(Math.floor(initialSeconds));
+      setCountdownSeconds(normalizedSeconds);
 
       countdownIntervalRef.current = window.setInterval(() => {
         setCountdownSeconds((prev) => {
@@ -200,7 +216,7 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
         });
       }, 1000);
     },
-    [clearCountdownInterval, resetCountdown]
+    [clearCountdownInterval, resetCountdown, setStaticCountdown]
   );
 
   useEffect(() => {
@@ -219,17 +235,6 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
       return { ...prev, nextPlayLabel: nextLabel };
     });
   }, [countdownSeconds]);
-
-  useEffect(() => {
-    if (
-      countdownSeconds === 0 &&
-      cardState.status === "default" &&
-      cardState.intervalMinutes &&
-      cardState.intervalMinutes > 0
-    ) {
-      startCountdown(cardState.intervalMinutes * 60);
-    }
-  }, [cardState.intervalMinutes, cardState.status, countdownSeconds, startCountdown]);
 
   const sliderMinutes = normalizeIntervalValue(interval || "5");
 
@@ -365,6 +370,14 @@ export const useStatusCardController = (): UseStatusCardControllerResult => {
 
       if (message.type === EventTypes.sampleStop) {
         setIsSamplePlaying(false);
+      }
+
+      if (message.type === EventTypes.syncStatus) {
+        if (message.statusSnapshot) {
+          hydrateFromSnapshotRef.current(message.statusSnapshot, imageUrisRef.current);
+        } else {
+          resetAllStateRef.current();
+        }
       }
     };
 

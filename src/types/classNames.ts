@@ -1,6 +1,7 @@
 export enum EventTypes {
   startTimer = "startTimer",
   initTimer = "initTimer",
+  syncStatus = "syncStatus",
   receiveMessage = "receiveMessage",
   stopTimer = "stopTimer",
   choiceSpeaker = "choiceSpeaker",

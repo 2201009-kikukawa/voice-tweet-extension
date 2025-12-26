@@ -1,4 +1,4 @@
-import { Uri, WebviewPanel, WebviewView } from "vscode";
+import { Uri, WebviewPanel } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
 import {
   DEFAULT_MESSAGE_MODE,
@@ -53,8 +53,16 @@ export class TabEventListener {
   private static currentModeLabel: string | null = null;
   private static currentIntervalMinutes: number | null = null;
   private static pausedRemainingSeconds = 0;
+  private static currentWebviewPanel: WebviewPanel | null = null;
 
   public setWebviewMessageListener(webviewView: WebviewPanel, context: Uri) {
+    TabEventListener.currentWebviewPanel = webviewView;
+    webviewView.onDidDispose(() => {
+      if (TabEventListener.currentWebviewPanel === webviewView) {
+        TabEventListener.currentWebviewPanel = null;
+      }
+    });
+
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
       const type = message.type;
       const text = message.text;
@@ -72,6 +80,7 @@ export class TabEventListener {
 
           const startPayload = (message.payload ?? {}) as StartTimerPayload;
           TabEventListener.updateSnapshotFromPayload(startPayload, intervalSeconds);
+          TabEventListener.postStatusSnapshot();
           await startInterval(intervalSeconds, speakerId, startPayload);
           break;
         }
@@ -192,6 +201,7 @@ export class TabEventListener {
 
         TabEventListener.lastMessage = "";
         TabEventListener.nextPlayTime = 0;
+        TabEventListener.postStatusSnapshot();
       }
 
       // サンプル再生
@@ -334,6 +344,7 @@ export class TabEventListener {
             await sendRandomMessage(TabEventListener.currentSpeakerId);
           }
         }, delay);
+        TabEventListener.postStatusSnapshot();
       }
 
       function scheduleResumeMessage(delaySeconds: number) {
@@ -348,6 +359,7 @@ export class TabEventListener {
             await sendRandomMessage(TabEventListener.currentSpeakerId);
           }
         }, resumeDelayMs);
+        TabEventListener.postStatusSnapshot();
       }
 
       // メッセージをランダムに取得
@@ -387,6 +399,20 @@ export class TabEventListener {
         }
       }
     });
+  }
+
+  private static postStatusSnapshot() {
+    if (!TabEventListener.currentWebviewPanel) {
+      return;
+    }
+    try {
+      TabEventListener.currentWebviewPanel.webview.postMessage({
+        type: EventTypes.syncStatus,
+        statusSnapshot: TabEventListener.createStatusSnapshot(),
+      });
+    } catch (error) {
+      console.warn("failed to post status snapshot", error);
+    }
   }
 
   private static updateSnapshotFromPayload(payload: StartTimerPayload, intervalSeconds: number) {
