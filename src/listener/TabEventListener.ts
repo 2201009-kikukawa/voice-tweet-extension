@@ -1,6 +1,12 @@
-import { Uri, WebviewPanel, WebviewView } from "vscode";
+import { Uri, WebviewPanel } from "vscode";
 import { EventListenerProps, EventTypes } from "../types/classNames";
-import { MESSAGE_LIST } from "../const";
+import {
+  DEFAULT_MESSAGE_MODE,
+  getMessageModeLabel,
+  getMessagesByMode,
+  normalizeMessageMode,
+  type MessageMode,
+} from "../const";
 import { fetchVoiceAPI } from "../lib/fetchVoiceAPI";
 import { AudioPlayer } from "../utilities/audioPlayer";
 import { panelWebviewView } from "./PanelEventListener";
@@ -10,7 +16,7 @@ type StatusType = "initial" | "default" | "stopped";
 type StartTimerPayload = {
   characterName?: string;
   styleId?: string;
-  modeValue?: string;
+  modeValue?: MessageMode;
   modeLabel?: string;
   intervalMinutes?: number;
   remainingSeconds?: number;
@@ -25,7 +31,7 @@ type StatusSnapshot = {
   status: StatusType;
   characterName?: string;
   styleId?: string;
-  modeValue?: string;
+  modeValue?: MessageMode;
   modeLabel?: string;
   intervalMinutes?: number;
   remainingSeconds?: number;
@@ -43,12 +49,20 @@ export class TabEventListener {
   private static currentStatus: StatusType = "initial";
   private static currentCharacterName: string | null = null;
   private static currentStyleId: string | null = null;
-  private static currentModeValue: string | null = null;
+  private static currentModeValue: MessageMode | null = null;
   private static currentModeLabel: string | null = null;
   private static currentIntervalMinutes: number | null = null;
   private static pausedRemainingSeconds = 0;
+  private static currentWebviewPanel: WebviewPanel | null = null;
 
   public setWebviewMessageListener(webviewView: WebviewPanel, context: Uri) {
+    TabEventListener.currentWebviewPanel = webviewView;
+    webviewView.onDidDispose(() => {
+      if (TabEventListener.currentWebviewPanel === webviewView) {
+        TabEventListener.currentWebviewPanel = null;
+      }
+    });
+
     webviewView.webview.onDidReceiveMessage(async (message: EventListenerProps) => {
       const type = message.type;
       const text = message.text;
@@ -66,6 +80,7 @@ export class TabEventListener {
 
           const startPayload = (message.payload ?? {}) as StartTimerPayload;
           TabEventListener.updateSnapshotFromPayload(startPayload, intervalSeconds);
+          TabEventListener.postStatusSnapshot();
           await startInterval(intervalSeconds, speakerId, startPayload);
           break;
         }
@@ -186,6 +201,7 @@ export class TabEventListener {
 
         TabEventListener.lastMessage = "";
         TabEventListener.nextPlayTime = 0;
+        TabEventListener.postStatusSnapshot();
       }
 
       // サンプル再生
@@ -328,6 +344,7 @@ export class TabEventListener {
             await sendRandomMessage(TabEventListener.currentSpeakerId);
           }
         }, delay);
+        TabEventListener.postStatusSnapshot();
       }
 
       function scheduleResumeMessage(delaySeconds: number) {
@@ -342,13 +359,18 @@ export class TabEventListener {
             await sendRandomMessage(TabEventListener.currentSpeakerId);
           }
         }, resumeDelayMs);
+        TabEventListener.postStatusSnapshot();
       }
 
       // メッセージをランダムに取得
       function getRandomMessage(): string {
         try {
-          const randomIndex = Math.floor(Math.random() * MESSAGE_LIST.length);
-          return MESSAGE_LIST[randomIndex];
+          const messagePool = getMessagesByMode(TabEventListener.currentModeValue);
+          if (!messagePool.length) {
+            throw new Error("message pool is empty");
+          }
+          const randomIndex = Math.floor(Math.random() * messagePool.length);
+          return messagePool[randomIndex];
         } catch (error) {
           console.error("Error reading messages file:", error);
           return "メッセージの取得に失敗しました";
@@ -379,8 +401,22 @@ export class TabEventListener {
     });
   }
 
+  private static postStatusSnapshot() {
+    if (!TabEventListener.currentWebviewPanel) {
+      return;
+    }
+    try {
+      TabEventListener.currentWebviewPanel.webview.postMessage({
+        type: EventTypes.syncStatus,
+        statusSnapshot: TabEventListener.createStatusSnapshot(),
+      });
+    } catch (error) {
+      console.warn("failed to post status snapshot", error);
+    }
+  }
+
   private static updateSnapshotFromPayload(payload: StartTimerPayload, intervalSeconds: number) {
-    if (!payload.characterName || !payload.styleId || !payload.modeValue) {
+    if (!payload.characterName || !payload.styleId) {
       console.warn("startTimer payload is missing metadata", payload);
       TabEventListener.resetSnapshot();
       return;
@@ -391,10 +427,12 @@ export class TabEventListener {
         ? payload.intervalMinutes
         : Math.max(1, Math.floor(intervalSeconds / 60));
 
+    const normalizedMode = normalizeMessageMode(payload.modeValue);
+
     TabEventListener.currentCharacterName = payload.characterName;
     TabEventListener.currentStyleId = payload.styleId;
-    TabEventListener.currentModeValue = payload.modeValue;
-    TabEventListener.currentModeLabel = payload.modeLabel ?? payload.modeValue;
+    TabEventListener.currentModeValue = normalizedMode;
+    TabEventListener.currentModeLabel = payload.modeLabel ?? getMessageModeLabel(normalizedMode);
     TabEventListener.currentIntervalMinutes = normalizedIntervalMinutes;
     TabEventListener.currentStatus = "default";
     const initialRemainingSeconds =
@@ -412,18 +450,19 @@ export class TabEventListener {
     if (
       !TabEventListener.currentCharacterName ||
       !TabEventListener.currentStyleId ||
-      !TabEventListener.currentIntervalMinutes ||
-      !TabEventListener.currentModeValue
+      !TabEventListener.currentIntervalMinutes
     ) {
       return undefined;
     }
+
+    const resolvedModeValue = TabEventListener.currentModeValue ?? DEFAULT_MESSAGE_MODE;
 
     return {
       status: TabEventListener.currentStatus,
       characterName: TabEventListener.currentCharacterName,
       styleId: TabEventListener.currentStyleId,
-      modeValue: TabEventListener.currentModeValue,
-      modeLabel: TabEventListener.currentModeLabel ?? undefined,
+      modeValue: resolvedModeValue,
+      modeLabel: TabEventListener.currentModeLabel ?? getMessageModeLabel(resolvedModeValue),
       intervalMinutes: TabEventListener.currentIntervalMinutes,
       remainingSeconds: TabEventListener.getSnapshotRemainingSeconds(),
     };

@@ -16,7 +16,7 @@ const StatusCardSection = ({
   onResume,
   onReset,
 }: StatusCardSectionProps) => (
-  <div className="mt-6 flex justify-center px-6">
+  <div className="mt-6 flex w-full justify-center px-4 md:px-0">
     <StatusCard
       status={cardState.status}
       characterName={cardState.characterName}
