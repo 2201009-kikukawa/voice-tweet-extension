@@ -73,7 +73,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={computedLoading}
         {...props}>
         {renderedLeftIcon}
-        {children ? <span>{children}</span> : null}
+        {children ? <span className="flex">{children}</span> : null}
       </Component>
     );
   }
