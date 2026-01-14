@@ -11,7 +11,7 @@ import { getNonce } from "../utilities/getNonce";
 import { PanelEventListener } from "../listener/PanelEventListener";
 
 export class SidebarProvider implements WebviewViewProvider {
-  public static readonly viewType = "voice-tweet-explorer";
+  public static readonly viewType = "tweet-editor-explorer";
 
   constructor(private readonly _extensionUri: Uri) { }
 

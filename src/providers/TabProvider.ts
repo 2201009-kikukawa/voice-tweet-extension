@@ -13,8 +13,8 @@ export class TabProvider {
 
   public setTabView() {
     const tab = window.createWebviewPanel(
-      "voice-tweet-webview-tab",
-      "つぶやきエディタ：setting",
+      "tweet-editor-webview-tab",
+      "Tweet Editor: setting",
       vscode.ViewColumn.One,
       {
         enableScripts: true,

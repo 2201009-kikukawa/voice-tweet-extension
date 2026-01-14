@@ -1,12 +1,12 @@
 {
-  "name": "voice-tweet",
-  "displayName": "Vice Tweet",
+  "name": "tweet-editor",
+  "displayName": "Tweet Editor - VOICEVOX Virtual Assistant",
   "description": "コーディング中の寂しさを解消！VOICEVOXのキャラクターが、あなたのコーディング作業を音声で応援してくれるバーチャルアシスタントです。",
   "version": "0.0.1",
   "publisher": "VS-Modules",
   "repository": {
     "type": "git",
-    "url": "https://github.com/2201009-kikukawa/voice-tweet-extension"
+    "url": "https://github.com/2201009-kikukawa/tweet-editor-extension"
   },
   "engines": {
     "vscode": "^1.93.1"
@@ -20,9 +20,9 @@
       "explorer": [
         {
           "type": "webview",
-          "id": "voice-tweet-explorer",
-          "name": "つぶやきエディタ",
-          "icon": "./resources/webview_icon.svg"
+          "id": "tweet-editor-explorer",
+          "name": "Tweet Editor",
+          "icon": "./resources/megaphone.svg"
         }
       ]
     }
